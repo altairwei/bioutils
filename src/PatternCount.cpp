@@ -1,9 +1,10 @@
 #include <iostream>
-#include <string>
+#include <cstring>
 
 using namespace std;
 
 int PatternCount_1(char const *, char const*);
+int PatternCount_2(char const *, char const*);
 
 int main( int argc,      // Number of strings in array argv
           char *argv[],   // Array of command-line argument strings
@@ -13,8 +14,8 @@ int main( int argc,      // Number of strings in array argv
         cerr << "Usage: " << argv[0] << " TEXT PARTTERN" << endl;
         return 1;
     }
-    
-    cout << PatternCount_1(argv[1], argv[2]) << endl;
+
+    cout << PatternCount_2(argv[1], argv[2]) << endl;
     return 0;
 }
 
@@ -46,6 +47,21 @@ int PatternCount_1(char const *text, char const *parttern)
         if (end)
             break;
 
+    }
+
+    return count;
+}
+
+int PatternCount_2(char const *text, char const *parttern)
+{
+    int count = 0;
+    long text_len = strlen(text);
+    long parttern_len = strlen(parttern);
+
+    for (int i = 0; i < text_len - parttern_len + 1; i++) {
+        if (strncmp(&text[i], parttern, parttern_len) == 0) {
+            count++;
+        }
     }
 
     return count;
