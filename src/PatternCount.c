@@ -1,29 +1,37 @@
-#include <iostream>
-#include <cstring>
-#include <cstdio>
-#include <cstdlib>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
-using namespace std;
-
-int PatternCount_1(char const *, char const*);
-int PatternCount_2(char const *, char const*);
+unsigned int PatternCount_1(char const *, char const*);
+unsigned int PatternCount_2(char const *, char const*);
+char *read_file(char *);
+char *read_stdin();
 
 int
 main( int argc, char *argv[], char *envp[] )
 {
-    if (argc != 3) {
-        cerr << "Usage: " << argv[0] << " TEXT PARTTERN" << endl;
-        return 1;
+    char *text;
+    if (argc == 3) {
+        text = read_file(argv[2]);
+    } else if (argc == 2) {
+        text = read_stdin();
+    } else {
+        fprintf(stderr, "Usage: %s PARTTERN [FILE]\n", argv[0]);
+        exit(1);
     }
 
-    cout << PatternCount_2(argv[1], argv[2]) << endl;
+    unsigned int count = PatternCount_1(text, argv[1]);
+    printf("%i", count);
+
+    free(text);
     return 0;
 }
 
-int
+unsigned int
 PatternCount_1(char const *text, char const *parttern)
 {
-    int count = 0;
+    unsigned int count = 0;
     char const *pText;
     char const *pKmer;
     char const *pPattern;
@@ -54,10 +62,10 @@ PatternCount_1(char const *text, char const *parttern)
     return count;
 }
 
-int
+unsigned int
 PatternCount_2(char const *text, char const *parttern)
 {
-    int count = 0;
+    unsigned int count = 0;
     long text_len = strlen(text);
     long parttern_len = strlen(parttern);
 
