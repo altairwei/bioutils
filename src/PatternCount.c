@@ -11,18 +11,70 @@ char *read_stdin();
 int
 main( int argc, char *argv[], char *envp[] )
 {
-    char *text;
-    if (argc == 3) {
-        text = read_file(argv[2]);
-    } else if (argc == 2) {
-        text = read_stdin();
-    } else {
-        fprintf(stderr, "Usage: %s PARTTERN [FILE]\n", argv[0]);
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s [OPTIONS] PARTTERN [FILE]\n", argv[0]);
         exit(1);
     }
 
-    unsigned int count = PatternCount_1(text, argv[1]);
-    printf("%i", count);
+    char *p_args[2] = {0, 0};
+    int pn = 0;
+    int ALG;
+    char *cur_opt;
+    while (--argc > 0) {
+        cur_opt = *++argv;
+        if (*cur_opt == '-') {
+            // Parse options
+            switch (*++cur_opt)
+            {
+            case 'a':
+                // Choose algorithm
+                --argc;
+                ALG = atoi(*++argv);
+                break;
+            default:
+                fprintf(stderr, "Unkown options: -%s", cur_opt);
+                break;
+            }
+        } else {
+            // Parse arguments: PARTTERN FILE
+            if (pn < 2) {
+                p_args[pn] = cur_opt;
+            } else {
+                fprintf(stderr, "too many arguments.\n");
+                fprintf(stderr, "Usage: %s [OPTIONS] PARTTERN [FILE]\n", argv[0]);
+                exit(1);
+            }
+
+            pn++;
+        }
+
+    }
+
+    /* Read file or stdin to memory. */
+    char *text;
+    char *parttern = p_args[0];
+    char *filename = p_args[1];
+    if (filename) {
+        text = read_file(filename);
+    } else {
+        text = read_stdin();
+    }
+
+    unsigned int count;
+    switch (ALG)
+    {
+    case 1:
+        count = PatternCount_1(text, parttern);
+        break;
+    case 2:
+        count = PatternCount_2(text, parttern);
+        break;
+    default:
+        count = PatternCount_2(text, parttern);
+        break;
+    }
+
+    printf("%i\n", count);
 
     free(text);
     return 0;
