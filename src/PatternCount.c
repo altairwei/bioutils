@@ -130,6 +130,12 @@ PatternCount_2(char const *text, char const *parttern)
     return count;
 }
 
+/**
+ * @brief Read file content to memory.
+ * 
+ * @param filename 
+ * @return char* The pointer to text read in.
+ */
 char *
 read_file(char *filename)
 {
@@ -153,6 +159,11 @@ read_file(char *filename)
     return buffer;
 }
 
+/**
+ * @brief Read whole stdin text stream into memory.
+ * 
+ * @return char* The pointer to text read in.
+ */
 char *
 read_stdin()
 {

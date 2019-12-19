@@ -1,2 +1,5 @@
 .vscode
 .data
+
+*.exe
+*.obj
