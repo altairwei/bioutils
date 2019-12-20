@@ -2,15 +2,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
+#include <math.h>
+
+#define PROGRAM_NAME "wc"
 
 unsigned int PatternCount_1(char const *, char const*);
 unsigned int PatternCount_2(char const *, char const*);
+int hash_kmer(char *);
 char *read_file(char *);
 char *read_stdin();
 
 void emit_help()
 {
-    fprintf(stderr, "Usage: %s [OPTIONS] PARTTERN [FILE]\n", argv[0]);
+    fprintf(stderr, "Usage: %s [OPTIONS] PARTTERN [FILE]\n", PROGRAM_NAME);
+    exit(1);
+}
+
+void die(char *msg)
+{
+    fprintf(stderr, "Error: %s\n", msg);
     exit(1);
 }
 
@@ -75,6 +86,7 @@ main( int argc, char *argv[], char *envp[] )
     }
 
     printf("%i\n", count);
+    printf("Hash of %s is %i\n", parttern, hash_kmer(parttern));
 
     free(text);
     return 0;
@@ -128,6 +140,37 @@ PatternCount_2(char const *text, char const *parttern)
     }
 
     return count;
+}
+
+int hash_kmer(char *kmer)
+{
+    int hash = 0;
+    int len = strlen(kmer);
+    while (len-- > 0) {
+        int val = 0;
+        switch (toupper(*kmer++))
+        {
+        case 'A':
+            val = 0;
+            break;
+        case 'T':
+            val = 1;
+            break;
+        case 'C':
+            val = 2;
+            break;
+        case 'G':
+            val = 3;
+            break;
+        default:
+            die("unknown base.");
+            break;
+        }
+
+        hash += val*pow(4, len);
+    }
+
+    return hash;
 }
 
 /**
