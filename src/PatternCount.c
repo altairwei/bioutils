@@ -8,17 +8,22 @@ unsigned int PatternCount_2(char const *, char const*);
 char *read_file(char *);
 char *read_stdin();
 
+void emit_help()
+{
+    fprintf(stderr, "Usage: %s [OPTIONS] PARTTERN [FILE]\n", argv[0]);
+    exit(1);
+}
+
 int
 main( int argc, char *argv[], char *envp[] )
 {
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s [OPTIONS] PARTTERN [FILE]\n", argv[0]);
-        exit(1);
-    }
+    if (argc < 2)
+        emit_help();
 
-    char *p_args[2] = {0, 0};
-    int pn = 0;
+    int pos = 0;
     int ALG;
+    char *parttern = NULL;
+    char *filename = NULL;
     char *cur_opt;
     while (--argc > 0) {
         cur_opt = *++argv;
@@ -37,23 +42,18 @@ main( int argc, char *argv[], char *envp[] )
             }
         } else {
             // Parse arguments: PARTTERN FILE
-            if (pn < 2) {
-                p_args[pn] = cur_opt;
-            } else {
-                fprintf(stderr, "too many arguments.\n");
-                fprintf(stderr, "Usage: %s [OPTIONS] PARTTERN [FILE]\n", argv[0]);
-                exit(1);
-            }
-
-            pn++;
+            if (++pos == 1)
+                parttern = cur_opt;
+            else if (pos == 2)
+                filename = cur_opt;
+            else
+                emit_help();
         }
 
     }
 
     /* Read file or stdin to memory. */
     char *text;
-    char *parttern = p_args[0];
-    char *filename = p_args[1];
     if (filename) {
         text = read_file(filename);
     } else {
