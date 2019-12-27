@@ -1,5 +1,7 @@
 .vscode
 .data
 
+build
+
 *.exe
 *.obj

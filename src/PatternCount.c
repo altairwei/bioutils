@@ -6,10 +6,16 @@
 #include <math.h>
 
 #define PROGRAM_NAME "wc"
+#define ISNTP(C) ((C) == 'A' || (C) == 'T' || (C) == 'C' || (C) == 'G' \
+        || (C) == 'a' || (C) == 't' || (C) == 'c' || (C) == 'g')
 
-unsigned int PatternCount_1(char const *, char const*);
-unsigned int PatternCount_2(char const *, char const*);
-int hash_kmer(char *);
+typedef unsigned long long hash_b;
+
+unsigned int PatternCount_1(char *, char *);
+unsigned int PatternCount_2(char *, char *);
+unsigned int PatternCount_3(char *, char *);
+hash_b hash_kmer(char *, size_t);
+int bpton(char);
 char *read_file(char *);
 char *read_stdin();
 
@@ -80,20 +86,22 @@ main( int argc, char *argv[], char *envp[] )
     case 2:
         count = PatternCount_2(text, parttern);
         break;
+    case 3:
+        count = PatternCount_3(text, parttern);
+        break;
     default:
         count = PatternCount_2(text, parttern);
         break;
     }
 
     printf("%i\n", count);
-    printf("Hash of %s is %i\n", parttern, hash_kmer(parttern));
 
     free(text);
     return 0;
 }
 
 unsigned int
-PatternCount_1(char const *text, char const *parttern)
+PatternCount_1(char *text, char *parttern)
 {
     unsigned int count = 0;
     char const *pText;
@@ -127,7 +135,7 @@ PatternCount_1(char const *text, char const *parttern)
 }
 
 unsigned int
-PatternCount_2(char const *text, char const *parttern)
+PatternCount_2(char *text, char *parttern)
 {
     unsigned int count = 0;
     long text_len = strlen(text);
@@ -142,36 +150,85 @@ PatternCount_2(char const *text, char const *parttern)
     return count;
 }
 
-int hash_kmer(char *kmer)
+/**
+ * @brief KM algorithm.
+ * 
+ * @param text 
+ * @param parttern The max length of pattern is 32, which can be hashed in to `long long` type.
+ * @return unsigned int 
+ */
+unsigned int
+PatternCount_3(char *text, char *parttern)
 {
-    int hash = 0;
-    int len = strlen(kmer);
-    while (len-- > 0) {
-        int val = 0;
-        switch (toupper(*kmer++))
-        {
-        case 'A':
-            val = 0;
-            break;
-        case 'T':
-            val = 1;
-            break;
-        case 'C':
-            val = 2;
-            break;
-        case 'G':
-            val = 3;
-            break;
-        default:
-            die("unknown base.");
-            break;
-        }
+    unsigned int count = 0;
+    size_t t_len = strlen(text);
+    size_t p_len = strlen(parttern);
+    hash_b pattern_hash = hash_kmer(parttern, p_len);
+    hash_b kmer_hash = hash_kmer(text, p_len); /* hash value of first kmer */
 
-        hash += val*pow(4, len);
+    // Triming non NTP characters
+    for (; t_len > 1 && !ISNTP(text[t_len -1]); t_len--)
+        continue;
+
+    for (int i = 1; i < t_len - p_len + 1; i++) {
+        // If hash values are matched then k-mer and pattern are matched.
+        if (kmer_hash == pattern_hash)
+            count++;
+        // Compute hash of next k-mer
+        //TODO: 用按位与来将高位清零，然后左移，再加上新的末尾hash
+        kmer_hash = kmer_hash - (bpton(text[i-1]) << 2*(p_len - 1));
+        kmer_hash = (kmer_hash << 2) + (bpton(text[i+ p_len - 1]));
+    }
+
+    return count;
+}
+
+/**
+ * @brief Convert DNA base to number.
+ * 
+ * @param base 
+ * @return int 
+ */
+inline int
+bpton(char base)
+{
+    int val;
+    switch (toupper(base))
+    {
+    case 'A':
+        val = 0;
+        break;
+    case 'T':
+        val = 1;
+        break;
+    case 'C':
+        val = 2;
+        break;
+    case 'G':
+        val = 3;
+        break;
+    default:
+        die("unknown base.");
+        break;
+    }
+
+    return val;
+}
+
+hash_b
+hash_kmer(char *kmer, size_t len)
+{
+    hash_b hash = 0;
+
+    while (len-- > 0) {
+        int val = bpton(*kmer++);
+        hash += val << 2*len;
     }
 
     return hash;
 }
+
+//TODO: 将这些读取函数更改一下。函数返回实际读入的字符数，然后接受Buffer的指针，直接将其指向新的动态分配数组
 
 /**
  * @brief Read file content to memory.
