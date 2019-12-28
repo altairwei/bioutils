@@ -9,12 +9,12 @@
 #define ISNTP(C) ((C) == 'A' || (C) == 'T' || (C) == 'C' || (C) == 'G' \
         || (C) == 'a' || (C) == 't' || (C) == 'c' || (C) == 'g')
 
-typedef unsigned long long hash_b;
+typedef unsigned long long hash_t;
 
 unsigned int PatternCount_1(char *, char *);
 unsigned int PatternCount_2(char *, char *);
 unsigned int PatternCount_3(char *, char *);
-hash_b hash_kmer(char *, size_t);
+hash_t hash_kmer(char *, size_t);
 int bpton(char);
 char *read_file(char *);
 char *read_stdin();
@@ -163,8 +163,8 @@ PatternCount_3(char *text, char *parttern)
     unsigned int count = 0;
     size_t t_len = strlen(text);
     size_t p_len = strlen(parttern);
-    hash_b pattern_hash = hash_kmer(parttern, p_len);
-    hash_b kmer_hash = hash_kmer(text, p_len); /* hash value of first kmer */
+    hash_t pattern_hash = hash_kmer(parttern, p_len);
+    hash_t kmer_hash = hash_kmer(text, p_len); /* hash value of first kmer */
 
     // Triming non NTP characters
     for (; t_len > 1 && !ISNTP(text[t_len -1]); t_len--)
@@ -215,10 +215,10 @@ bpton(char base)
     return val;
 }
 
-hash_b
+hash_t
 hash_kmer(char *kmer, size_t len)
 {
-    hash_b hash = 0;
+    hash_t hash = 0;
 
     while (len-- > 0) {
         int val = bpton(*kmer++);
