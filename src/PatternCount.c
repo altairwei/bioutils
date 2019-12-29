@@ -5,6 +5,8 @@
 #include <ctype.h>
 #include <math.h>
 
+#include "glib.h"
+
 #define PROGRAM_NAME "wc"
 #define ISNTP(C) ((C) == 'A' || (C) == 'T' || (C) == 'C' || (C) == 'G' \
         || (C) == 'a' || (C) == 't' || (C) == 'c' || (C) == 'g')
@@ -208,7 +210,7 @@ bpton(char base)
         val = 3;
         break;
     default:
-        die("unknown base.");
+        g_error("unknown base.");
         break;
     }
 
