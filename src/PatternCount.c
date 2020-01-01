@@ -21,6 +21,14 @@ int bpton(char);
 char *read_file(char *);
 char *read_stdin();
 
+static gint ALG = 2;
+
+static GOptionEntry entries[] =
+{
+  { "algorithm", 'g', 0, G_OPTION_ARG_INT, &ALG, "Algorithm to be applied.", "N" },
+  { NULL }
+};
+
 void emit_help()
 {
     fprintf(stderr, "Usage: %s [OPTIONS] PARTTERN [FILE]\n", PROGRAM_NAME);
@@ -36,47 +44,31 @@ void die(char *msg)
 int
 main( int argc, char *argv[], char *envp[] )
 {
-    if (argc < 2)
-        emit_help();
+    GError *error = NULL;
+    GOptionContext *context;
 
-    int pos = 0;
-    int ALG;
-    char *parttern = NULL;
-    char *filename = NULL;
-    char *cur_opt;
-    while (--argc > 0) {
-        cur_opt = *++argv;
-        if (*cur_opt == '-') {
-            // Parse options
-            switch (*++cur_opt)
-            {
-            case 'a':
-                // Choose algorithm
-                --argc;
-                ALG = atoi(*++argv);
-                break;
-            default:
-                fprintf(stderr, "Unkown options: -%s", cur_opt);
-                break;
-            }
-        } else {
-            // Parse arguments: PARTTERN FILE
-            if (++pos == 1)
-                parttern = cur_opt;
-            else if (pos == 2)
-                filename = cur_opt;
-            else
-                emit_help();
-        }
-
+    context = g_option_context_new("PARTTERN [FILE]");
+    g_option_context_add_main_entries(context, entries, NULL);
+    if (!g_option_context_parse(context, &argc, &argv, &error)) {
+        g_print("option parsing failed: %s\n", error->message);
+        exit (1);
     }
 
-    /* Read file or stdin to memory. */
-    char *text;
-    if (filename) {
-        text = read_file(filename);
+    // Parse first positional argument.
+    char *parttern = NULL;
+    if (--argc < 1) {
+        g_print(g_option_context_get_help(context, true, NULL));
+        exit(1);
     } else {
+        parttern = *++argv;
+    }
+
+    // Parse second positional argument.
+    char *text;
+    if (--argc < 1) {
         text = read_stdin();
+    } else {
+        text = read_file(*++argv);
     }
 
     unsigned int count;
@@ -183,6 +175,19 @@ PatternCount_3(char *text, char *parttern)
     }
 
     return count;
+}
+
+inline bool
+is_ntp(char c)
+{
+  switch (c)
+    {
+    case 'A': case 'T': case 'C': case 'G':
+    case 'a': case 't': case 'c': case 'g':
+      return true;
+    default:
+      return false;
+    }
 }
 
 /**
