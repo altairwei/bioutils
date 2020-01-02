@@ -17,6 +17,7 @@ unsigned int PatternCount_1(char *, char *);
 unsigned int PatternCount_2(char *, char *);
 unsigned int PatternCount_3(char *, char *);
 hash_t hash_kmer(char *, size_t);
+bool is_ntp(char c);
 int bpton(char);
 char *read_file(char *);
 char *read_stdin();
@@ -47,6 +48,7 @@ main( int argc, char *argv[], char *envp[] )
     GError *error = NULL;
     GOptionContext *context;
 
+    // Parse options
     context = g_option_context_new("PARTTERN [FILE]");
     g_option_context_add_main_entries(context, entries, NULL);
     if (!g_option_context_parse(context, &argc, &argv, &error)) {
@@ -132,8 +134,8 @@ unsigned int
 PatternCount_2(char *text, char *parttern)
 {
     unsigned int count = 0;
-    long text_len = strlen(text);
-    long parttern_len = strlen(parttern);
+    size_t text_len = strlen(text);
+    size_t parttern_len = strlen(parttern);
 
     for (int i = 0; i < text_len - parttern_len + 1; i++) {
         if (strncmp(&text[i], parttern, parttern_len) == 0) {
@@ -160,8 +162,11 @@ PatternCount_3(char *text, char *parttern)
     hash_t pattern_hash = hash_kmer(parttern, p_len);
     hash_t kmer_hash = hash_kmer(text, p_len); /* hash value of first kmer */
 
+    hash_t mask = 0;
+    mask = ~((~mask) << (2*(p_len - 1)));
+
     // Triming non NTP characters
-    for (; t_len > 1 && !ISNTP(text[t_len -1]); t_len--)
+    for (; t_len > 1 && !is_ntp(text[t_len -1]); t_len--)
         continue;
 
     for (int i = 1; i < t_len - p_len + 1; i++) {
@@ -169,9 +174,7 @@ PatternCount_3(char *text, char *parttern)
         if (kmer_hash == pattern_hash)
             count++;
         // Compute hash of next k-mer
-        //TODO: 用按位与来将高位清零，然后左移，再加上新的末尾hash
-        kmer_hash = kmer_hash - (bpton(text[i-1]) << 2*(p_len - 1));
-        kmer_hash = (kmer_hash << 2) + (bpton(text[i+ p_len - 1]));
+        kmer_hash = ((kmer_hash & mask) << 2) + bpton(text[i+ p_len - 1]);
     }
 
     return count;
