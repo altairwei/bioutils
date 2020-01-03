@@ -5,9 +5,10 @@
 #include <ctype.h>
 #include <math.h>
 
-#include "glib.h"
+#include <glib.h>
+#include <gmodule.h>
 
-#define PROGRAM_NAME "wc"
+#define PROGRAM_NAME "bpfind"
 #define ISNTP(C) ((C) == 'A' || (C) == 'T' || (C) == 'C' || (C) == 'G' \
         || (C) == 'a' || (C) == 't' || (C) == 'c' || (C) == 'g')
 
@@ -178,6 +179,22 @@ PatternCount_3(char *text, char *parttern)
     }
 
     return count;
+}
+
+void FrequentWords_1(text, k)
+{
+    size_t t_len = strlen(text);
+    size_t max_count = 0;
+    int kmer_count[t_len - k];
+
+    char cur_kmer[k+1];
+    cur_kmer[k] = '\0';
+    for (int i = 0; i < t_len - k + 1; i++) {
+        int c = PatternCount_2(text, strncpy(cur_kmer, text, k));
+        kmer_count[i] = c;
+        if (c > max_count)
+            max_count = c;
+    }
 }
 
 inline bool
