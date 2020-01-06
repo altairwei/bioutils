@@ -22,5 +22,5 @@ endif()
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-add_executable(pc src/bpfind.c)
+add_executable(pc src/bpfind.cpp src/bpfind.h)
 target_link_libraries(pc ${CONAN_LIBS})

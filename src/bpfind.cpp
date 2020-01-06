@@ -1,27 +1,14 @@
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <ctype.h>
-#include <math.h>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <cctype>
 
 #include <glib.h>
 #include <gmodule.h>
 
+#include "bpfind.h"
+
 #define PROGRAM_NAME "bpfind"
-#define ISNTP(C) ((C) == 'A' || (C) == 'T' || (C) == 'C' || (C) == 'G' \
-        || (C) == 'a' || (C) == 't' || (C) == 'c' || (C) == 'g')
-
-typedef unsigned long long hash_t;
-
-unsigned int PatternCount_1(char *, char *);
-unsigned int PatternCount_2(char *, char *);
-unsigned int PatternCount_3(char *, char *);
-hash_t hash_kmer(char *, size_t);
-bool is_ntp(char c);
-int bpton(char);
-char *read_file(char *);
-char *read_stdin();
 
 static gint ALG = 2;
 
@@ -98,7 +85,7 @@ main( int argc, char *argv[], char *envp[] )
 }
 
 unsigned int
-PatternCount_1(char *text, char *parttern)
+PatternCount_1(const char *text, const char *parttern)
 {
     unsigned int count = 0;
     char const *pText;
@@ -132,7 +119,7 @@ PatternCount_1(char *text, char *parttern)
 }
 
 unsigned int
-PatternCount_2(char *text, char *parttern)
+PatternCount_2(const char *text, const char *parttern)
 {
     unsigned int count = 0;
     size_t text_len = strlen(text);
@@ -155,7 +142,7 @@ PatternCount_2(char *text, char *parttern)
  * @return unsigned int 
  */
 unsigned int
-PatternCount_3(char *text, char *parttern)
+PatternCount_3(const char *text, const char *parttern)
 {
     unsigned int count = 0;
     size_t t_len = strlen(text);
@@ -181,7 +168,7 @@ PatternCount_3(char *text, char *parttern)
     return count;
 }
 
-void FrequentWords_1(text, k)
+void FrequentWords_1(const char *text, const int k)
 {
     size_t t_len = strlen(text);
     size_t max_count = 0;
@@ -243,7 +230,7 @@ bpton(char base)
 }
 
 hash_t
-hash_kmer(char *kmer, size_t len)
+hash_kmer(const char *kmer, size_t len)
 {
     hash_t hash = 0;
 
