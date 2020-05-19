@@ -1,22 +1,22 @@
 #include <cstring>
 #include <cstdio>
-#include <cstdlib>
 #include <cctype>
+#include <map>
+#include <string>
+#include <memory>
+#include <iostream>
 
 #include <glib.h>
 #include <gmodule.h>
+//#include <cxxopts.hpp>
+#include <argparse/argparse.hpp>
 
 #include "bpfind.h"
+#include "dataio.h"
+
+using namespace std;
 
 #define PROGRAM_NAME "bpfind"
-
-static gint ALG = 2;
-
-static GOptionEntry entries[] =
-{
-  { "algorithm", 'g', 0, G_OPTION_ARG_INT, &ALG, "Algorithm to be applied.", "N" },
-  { NULL }
-};
 
 void emit_help()
 {
@@ -33,59 +33,66 @@ void die(char *msg)
 int
 main( int argc, char *argv[], char *envp[] )
 {
-    GError *error = NULL;
-    GOptionContext *context;
+    argparse::ArgumentParser program(PROGRAM_NAME);
+    program.add_argument("-g", "--algorithm").help("Algorithm to be applied.")
+            .action([](const std::string& value) { return std::stoi(value); })
+            .default_value(2);
+    program.add_argument("pattern").help("k-mer pattern to count.");
+    program.add_argument("file").help("file contains sequences").default_value("-");
 
-    // Parse options
-    context = g_option_context_new("PARTTERN [FILE]");
-    g_option_context_add_main_entries(context, entries, NULL);
-    if (!g_option_context_parse(context, &argc, &argv, &error)) {
-        g_print("option parsing failed: %s\n", error->message);
-        exit (1);
+    try {
+        program.parse_args(argc, argv);
+    }
+    catch (const std::runtime_error& err) {
+        std::cout << err.what() << std::endl;
+        std::cout << program;
+        exit(0);
     }
 
-    // Parse first positional argument.
-    char *parttern = NULL;
-    if (--argc < 1) {
-        g_print(g_option_context_get_help(context, true, NULL));
-        exit(1);
-    } else {
-        parttern = *++argv;
-    }
+    string pattern = program.get<string>("pattern");
+    string fileName = program.get<string>("file");
+    int ALG = program.get<int>("--algorithm");
 
     // Parse second positional argument.
     char *text;
-    if (--argc < 1) {
+    if (fileName == "-") {
         text = read_stdin();
     } else {
-        text = read_file(*++argv);
+        text = read_file(fileName.c_str());
     }
 
     unsigned int count;
     switch (ALG)
     {
     case 1:
-        count = PatternCount_1(text, parttern);
+        count = PatternCount_BFH(text, pattern.c_str());
         break;
     case 2:
-        count = PatternCount_2(text, parttern);
+        count = PatternCount_BF(text, pattern.c_str());
         break;
     case 3:
-        count = PatternCount_3(text, parttern);
+        count = PatternCount_KM(text, pattern.c_str());
         break;
     default:
-        count = PatternCount_2(text, parttern);
+        count = PatternCount_BF(text, pattern.c_str());
         break;
     }
 
     printf("%i\n", count);
-
+    
     free(text);
     return 0;
 }
 
+/**
+ * @brief Brute force algorithm by hand.
+ * 
+ * @param text 
+ * @param parttern 
+ * @return unsigned int 
+ */
 unsigned int
-PatternCount_1(const char *text, const char *parttern)
+PatternCount_BFH(const char *text, const char *parttern)
 {
     unsigned int count = 0;
     char const *pText;
@@ -118,8 +125,15 @@ PatternCount_1(const char *text, const char *parttern)
     return count;
 }
 
+/**
+ * @brief Brute force algorithm.
+ * 
+ * @param text 
+ * @param parttern 
+ * @return unsigned int 
+ */
 unsigned int
-PatternCount_2(const char *text, const char *parttern)
+PatternCount_BF(const char *text, const char *parttern)
 {
     unsigned int count = 0;
     size_t text_len = strlen(text);
@@ -142,7 +156,7 @@ PatternCount_2(const char *text, const char *parttern)
  * @return unsigned int 
  */
 unsigned int
-PatternCount_3(const char *text, const char *parttern)
+PatternCount_KM(const char *text, const char *parttern)
 {
     unsigned int count = 0;
     size_t t_len = strlen(text);
@@ -168,19 +182,38 @@ PatternCount_3(const char *text, const char *parttern)
     return count;
 }
 
-void FrequentWords_1(const char *text, const int k)
+void
+FrequentWords(const std::string text, const int k, std::set<std::string> &result)
 {
-    size_t t_len = strlen(text);
-    size_t max_count = 0;
-    int kmer_count[t_len - k];
+    size_t t_len = text.length();
+    // Total count of k-mer
+    // 究竟要如何理解 k-mer 的数量？
+    size_t n_kmer = t_len - k + 1;
 
-    char cur_kmer[k+1];
-    cur_kmer[k] = '\0';
-    for (int i = 0; i < t_len - k + 1; i++) {
-        int c = PatternCount_2(text, strncpy(cur_kmer, text, k));
+    // Array to store counts for each k-mer.
+    vector<int> kmer_count(n_kmer);
+
+    // Array to store current k-mer.
+    string cur_kmer;
+    cur_kmer.reserve(k); 
+
+    size_t max_count = 0;
+    // Calculate counts of each k-mer
+    for (int i = 0; i < n_kmer; i++) {
+        cur_kmer = text.substr(i, k);
+        int c = PatternCount_BF(text.c_str(), cur_kmer.c_str());
         kmer_count[i] = c;
         if (c > max_count)
             max_count = c;
+    }
+
+    // Put most frequent patterns together
+    for (int i = 0; i < n_kmer; i++) {
+        if (kmer_count[i] == max_count) {
+            string par = text.substr(i, k);
+            // Set will remove duplicates automaticlly.
+            result.insert(par);
+        }
     }
 }
 
@@ -240,66 +273,4 @@ hash_kmer(const char *kmer, size_t len)
     }
 
     return hash;
-}
-
-//TODO: 将这些读取函数更改一下。函数返回实际读入的字符数，然后接受Buffer的指针，直接将其指向新的动态分配数组
-
-/**
- * @brief Read file content to memory.
- * 
- * @param filename 
- * @return char* The pointer to text read in.
- */
-char *
-read_file(char *filename)
-{
-    char * buffer = 0;
-    long length;
-    FILE * fp = fopen (filename, "rb");
-
-    if (fp)
-    {
-        fseek (fp, 0, SEEK_END);
-        length = ftell(fp);
-        fseek (fp, 0, SEEK_SET);
-        buffer = (char *) malloc(length);
-        if (buffer)
-        {
-            fread (buffer, 1, length, fp);
-        }
-        fclose (fp);
-    }
-
-    return buffer;
-}
-
-/**
- * @brief Read whole stdin text stream into memory.
- * 
- * @return char* The pointer to text read in.
- */
-char *
-read_stdin()
-{
-    size_t cap = 4096;
-    size_t len = 0; 
-
-    char *buffer = (char *)malloc(cap * sizeof (char));
-    int c;
-
-    while ((c = fgetc(stdin)) != EOF)
-        {
-            buffer[len] = c;
-
-            if (++len == cap)
-                // Make the output buffer twice its current size
-                buffer = (char *)realloc(buffer, (cap *= 2) * sizeof (char));
-        }
-
-    // Trim off any unused bytes from the buffer
-    buffer = (char *)realloc(buffer, (len + 1) * sizeof (char));
-
-    buffer[len] = '\0';
-
-    return buffer;
 }

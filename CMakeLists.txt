@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.0)
 
 project(bioutils)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 if(NOT CONAN_INSTALL_MANUALLY)
     if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
         message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
@@ -22,5 +26,15 @@ endif()
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-add_executable(pc src/bpfind.cpp src/bpfind.h)
+set(BIOUTILS_HEADERS
+    src/dataio.h
+    src/bpfind.h
+)
+
+set(BIOUTILS_SOURCES
+    src/dataio.cpp
+    src/bpfind.cpp
+)
+
+add_executable(pc ${BIOUTILS_HEADERS} ${BIOUTILS_SOURCES})
 target_link_libraries(pc ${CONAN_LIBS})
