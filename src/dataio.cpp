@@ -1,7 +1,19 @@
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <fstream>
+#include <streambuf>
 
-//TODO: 将这些读取函数更改一下。函数返回实际读入的字符数，然后接受Buffer的指针，直接将其指向新的动态分配数组
+
+std::string
+read_file(const std::string &fileName)
+{
+    std::ifstream file(fileName);
+    std::string content((std::istreambuf_iterator<char>(file)),
+                    std::istreambuf_iterator<char>());
+    return content;
+}
+
 
 /**
  * @brief Read file content to memory.

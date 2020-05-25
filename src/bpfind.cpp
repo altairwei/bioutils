@@ -5,10 +5,8 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include <fstream>
 
-#include <glib.h>
-#include <gmodule.h>
-//#include <cxxopts.hpp>
 #include <argparse/argparse.hpp>
 
 #include "bpfind.h"
@@ -35,9 +33,11 @@ main( int argc, char *argv[], char *envp[] )
 {
     argparse::ArgumentParser program(PROGRAM_NAME);
     program.add_argument("-g", "--algorithm").help("Algorithm to be applied.")
-            .action([](const std::string& value) { return std::stoi(value); })
+            .action([](const std::string &value) { return std::stoi(value); })
             .default_value(2);
-    program.add_argument("pattern").help("k-mer pattern to count.");
+    program.add_argument("-p", "--pattern").help("k-mer pattern to count.");
+    program.add_argument("-k", "--kmer").help("Find most frequent k-mer.")
+            .action([](const std::string &value) { return std::stoi(value); });
     program.add_argument("file").help("file contains sequences").default_value("-");
 
     try {
@@ -49,38 +49,61 @@ main( int argc, char *argv[], char *envp[] )
         exit(0);
     }
 
-    string pattern = program.get<string>("pattern");
     string fileName = program.get<string>("file");
-    int ALG = program.get<int>("--algorithm");
 
-    // Parse second positional argument.
-    char *text;
-    if (fileName == "-") {
-        text = read_stdin();
-    } else {
-        text = read_file(fileName.c_str());
+    //FIXME: use program.present instead when argparse v2.2 is aviable.
+    try {
+        string pattern = program.get<string>("--pattern");
+        int ALG = program.get<int>("--algorithm");
+        
+        // Parse second positional argument.
+        char *text;
+        if (fileName == "-") {
+            text = read_stdin();
+        } else {
+            text = read_file(fileName.c_str());
+        }
+
+        unsigned int count;
+        switch (ALG)
+        {
+        case 1:
+            count = PatternCount_BFH(text, pattern.c_str());
+            break;
+        case 2:
+            count = PatternCount_BF(text, pattern.c_str());
+            break;
+        case 3:
+            count = PatternCount_KM(text, pattern.c_str());
+            break;
+        default:
+            count = PatternCount_BF(text, pattern.c_str());
+            break;
+        }
+
+        printf("%i\n", count);
+        
+        free(text);
+    } catch (std::logic_error &) {
+
     }
 
-    unsigned int count;
-    switch (ALG)
-    {
-    case 1:
-        count = PatternCount_BFH(text, pattern.c_str());
-        break;
-    case 2:
-        count = PatternCount_BF(text, pattern.c_str());
-        break;
-    case 3:
-        count = PatternCount_KM(text, pattern.c_str());
-        break;
-    default:
-        count = PatternCount_BF(text, pattern.c_str());
-        break;
+    try {
+        int k = program.get<int>("--kmer");
+        string text = read_file(fileName);
+
+        set<string> results;
+        FrequentWords(text, k, results);
+
+        for (auto kmer : results) {
+            cout << kmer << endl;
+        }
+
+    } catch (std::logic_error &) {
+
     }
 
-    printf("%i\n", count);
-    
-    free(text);
+
     return 0;
 }
 
@@ -255,7 +278,7 @@ bpton(char base)
         val = 3;
         break;
     default:
-        g_error("unknown base.");
+        throw std::logic_error("Unknown base.");
         break;
     }
 
