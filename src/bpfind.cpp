@@ -38,19 +38,18 @@ main( int argc, char *argv[], char *envp[] )
     program.add_argument("-p", "--pattern").help("k-mer pattern to count.");
     program.add_argument("-k", "--kmer").help("Find most frequent k-mer.")
             .action([](const std::string &value) { return std::stoi(value); });
-    program.add_argument("file").help("file contains sequences").default_value("-");
+    program.add_argument("file").help("file contains sequences")
+            .default_value(std::string("-"));
 
     try {
         program.parse_args(argc, argv);
-    }
-    catch (const std::runtime_error& err) {
+    } catch (const std::runtime_error& err) {
         std::cout << err.what() << std::endl;
         std::cout << program;
         exit(0);
     }
 
     string fileName = program.get<string>("file");
-
     //FIXME: use program.present instead when argparse v2.2 is aviable.
     try {
         string pattern = program.get<string>("--pattern");
@@ -85,12 +84,18 @@ main( int argc, char *argv[], char *envp[] )
         
         free(text);
     } catch (std::logic_error &) {
-
+        // Option does not exist.
     }
 
     try {
         int k = program.get<int>("--kmer");
-        string text = read_file(fileName);
+
+        string text;
+        if (fileName == "-") {
+            text = read_stdin();
+        } else {
+            text = read_file(fileName);
+        }
 
         set<string> results;
         FrequentWords(text, k, results);
@@ -100,7 +105,7 @@ main( int argc, char *argv[], char *envp[] )
         }
 
     } catch (std::logic_error &) {
-
+        // Option does not exist.
     }
 
 

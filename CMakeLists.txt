@@ -36,5 +36,5 @@ set(BIOUTILS_SOURCES
     src/bpfind.cpp
 )
 
-add_executable(pc ${BIOUTILS_HEADERS} ${BIOUTILS_SOURCES})
-target_link_libraries(pc ${CONAN_LIBS})
+add_executable(bpfind ${BIOUTILS_HEADERS} ${BIOUTILS_SOURCES})
+target_link_libraries(bpfind ${CONAN_LIBS})
