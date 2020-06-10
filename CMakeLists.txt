@@ -26,15 +26,26 @@ endif()
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-set(BIOUTILS_HEADERS
+set(BPFIND_HEADERS
     src/dataio.h
     src/bpfind.h
 )
 
-set(BIOUTILS_SOURCES
+set(BPFIND_SOURCES
     src/dataio.cpp
     src/bpfind.cpp
 )
 
-add_executable(bpfind ${BIOUTILS_HEADERS} ${BIOUTILS_SOURCES})
+set(BPSEQ_HEADERS
+    src/dataio.h
+)
+
+set(BPSEQ_SOURCES
+    src/dataio.cpp
+    src/bpseq.cpp
+)
+
+add_executable(bpfind ${BPFIND_HEADERS} ${BPFIND_SOURCES})
+add_executable(bpseq ${BPSEQ_HEADERS} ${BPSEQ_SOURCES})
 target_link_libraries(bpfind ${CONAN_LIBS})
+target_link_libraries(bpseq ${CONAN_LIBS})

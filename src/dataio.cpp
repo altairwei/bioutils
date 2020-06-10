@@ -74,3 +74,12 @@ read_stdin()
 
     return buffer;
 }
+
+std::string read_input(const std::string &argument)
+{
+    if (argument == "-") {
+        return read_stdin();
+    } else {
+        return read_file(argument);
+    }
+}
