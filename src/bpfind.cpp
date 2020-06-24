@@ -164,16 +164,37 @@ unsigned int
 PatternCount_BF(const char *text, const char *parttern)
 {
     unsigned int count = 0;
+
+    find_do(text, parttern,
+        [&](const size_t i, const char *, const char *) {
+            count++;
+        }
+    );
+
+    return count;
+}
+
+void
+PatternIndex(std::vector<size_t> indexes, const char *text, const char *parttern)
+{
+    find_do(text, parttern,
+        [&](const size_t i, const char *, const char *){
+            indexes.push_back(i);
+        }
+    );
+}
+
+void find_do(const char *text, const char *parttern,
+    std::function<void(const size_t, const char *, const char *)> callback)
+{
     size_t text_len = strlen(text);
     size_t parttern_len = strlen(parttern);
 
-    for (int i = 0; i < text_len - parttern_len + 1; i++) {
+    for (size_t i = 0; i < text_len - parttern_len + 1; i++) {
         if (strncmp(&text[i], parttern, parttern_len) == 0) {
-            count++;
+            callback(i, text, parttern);
         }
     }
-
-    return count;
 }
 
 /**

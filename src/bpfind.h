@@ -5,12 +5,15 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <functional>
 
 #define ISNTP(C) ((C) == 'A' || (C) == 'T' || (C) == 'C' || (C) == 'G' \
         || (C) == 'a' || (C) == 't' || (C) == 'c' || (C) == 'g')
 
 typedef unsigned long long hash_t;
 
+void find_do(const char *text, const char *parttern,
+    std::function<void(const size_t, const char *, const char *)> callback);
 unsigned int PatternCount_BFH(const char *, const char *);
 unsigned int PatternCount_BF(const char *, const char *);
 unsigned int PatternCount_KM(const char *, const char *);
