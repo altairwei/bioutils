@@ -7,10 +7,12 @@ class BioUtilsConan(ConanFile):
     url = "https://github.com/altairwei/bioutils.git"
     description = "Bioutils includes most of the basic command-line tools that are expected in bioinformatics."
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake"
+    generators = "cmake", "cmake_paths","cmake_find_package"
     requires = (
-        "glib/2.58.3@bincrafters/stable",
         "argparse/2.1"
+    )
+    build_requires = (
+        "gtest/1.8.1@bincrafters/stable"
     )
     
     def build(self):

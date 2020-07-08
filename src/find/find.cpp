@@ -9,7 +9,7 @@
 
 #include <argparse/argparse.hpp>
 
-#include "bpfind.h"
+#include "find.h"
 #include "dataio.h"
 
 using namespace std;
@@ -58,9 +58,9 @@ main( int argc, char *argv[], char *envp[] )
         // Parse second positional argument.
         char *text;
         if (fileName == "-") {
-            text = read_stdin();
+            text = bioutils::IO::read_stdin();
         } else {
-            text = read_file(fileName.c_str());
+            text = bioutils::IO::read_file(fileName.c_str());
         }
 
         unsigned int count;
@@ -92,9 +92,9 @@ main( int argc, char *argv[], char *envp[] )
 
         string text;
         if (fileName == "-") {
-            text = read_stdin();
+            text = bioutils::IO::read_stdin();
         } else {
-            text = read_file(fileName);
+            text = bioutils::IO::read_file(fileName);
         }
 
         set<string> results;

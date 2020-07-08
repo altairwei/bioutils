@@ -55,7 +55,7 @@ main(int argc, char *argv[], char *envp[])
 
     string fileName = program.get<string>("file");
 
-    string seq = read_input(fileName);
+    string seq = bioutils::IO::read_input(fileName);
     if (program["--reverse-complement"] == true) {
         seq.erase(std::remove(seq.begin(), seq.end(), '\n'), seq.end());
         seq.erase(std::remove(seq.begin(), seq.end(), '\r'), seq.end());

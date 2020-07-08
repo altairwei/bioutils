@@ -1,9 +1,14 @@
+#include "dataio.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <fstream>
 #include <streambuf>
 
+namespace bioutils {
+
+namespace IO {
 
 std::string
 read_file(const std::string &fileName)
@@ -83,3 +88,9 @@ std::string read_input(const std::string &argument)
         return read_file(argument);
     }
 }
+
+
+} // IO
+
+} // bioutils
+
