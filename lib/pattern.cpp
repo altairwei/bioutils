@@ -148,10 +148,17 @@ void find_do(const char *text, const char *pattern,
     }
 }
 
-void
+int
 FrequentWords(const std::string text, const int k, std::set<std::string> &output)
 {
     size_t t_len = text.length();
+    if (t_len == 0)
+        return 1;
+    if (k <= 0)
+        return 1;
+    if (k > t_len)
+        return 1;
+
     // Total count of k-mer
     // 究竟要如何理解 k-mer 的数量？
     size_t n_kmer = t_len - k + 1;
@@ -181,6 +188,8 @@ FrequentWords(const std::string text, const int k, std::set<std::string> &output
             output.insert(par);
         }
     }
+
+    return 0;
 }
 
 inline bool
