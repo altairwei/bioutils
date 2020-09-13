@@ -126,11 +126,11 @@ PatternCount(const char *text, const char *pattern, enum PatternCountAlgorithms 
 }
 
 void
-PatternIndex(std::vector<size_t> indexes, const char *text, const char *pattern)
+PatternIndex(const char *text, const char *pattern, std::vector<size_t> &output)
 {
     find_do(text, pattern,
         [&](const size_t i, const char *, const char *){
-            indexes.push_back(i);
+            output.push_back(i);
         }
     );
 }
@@ -148,16 +148,16 @@ void find_do(const char *text, const char *pattern,
     }
 }
 
-int
+void
 FrequentWords(const std::string text, const int k, std::set<std::string> &output)
 {
     size_t t_len = text.length();
     if (t_len == 0)
-        return 1;
+        return;
     if (k <= 0)
-        return 1;
+        return;
     if (k > t_len)
-        return 1;
+        return;
 
     // Total count of k-mer
     // 究竟要如何理解 k-mer 的数量？
@@ -188,8 +188,6 @@ FrequentWords(const std::string text, const int k, std::set<std::string> &output
             output.insert(par);
         }
     }
-
-    return 0;
 }
 
 inline bool
