@@ -128,6 +128,8 @@ PatternCount(const char *text, const char *pattern, enum PatternCountAlgorithms 
 void
 PatternIndex(const char *text, const char *pattern, std::vector<size_t> &output)
 {
+    if (strlen(text) == 0 || strlen(pattern) == 0)
+        return;
     find_do(text, pattern,
         [&](const size_t i, const char *, const char *){
             output.push_back(i);
