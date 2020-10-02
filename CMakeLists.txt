@@ -32,6 +32,7 @@ conan_output_dirs_setup()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_BINARY_DIR})
 find_package(argparse REQUIRED)
+find_package(CLI11 REQUIRED)
 find_package(gtest REQUIRED)
 
 add_subdirectory(lib)

@@ -8,80 +8,97 @@
 #include <fstream>
 
 #include <argparse/argparse.hpp>
+#include <CLI/CLI.hpp>
 
 #include "dataio.h"
 #include "pattern.h"
 
 using namespace std;
 
-#define PROGRAM_NAME "bpfind"
+#define PROGRAM_NAME "biofind - A tool to find pattern in sequence."
+
+
+size_t
+count(const string &text, const string &pattern, const int algorithm = 2)
+{
+    size_t count;
+    switch (algorithm)
+    {
+    case 1:
+        count = bioutils::algorithms::PatternCount(text.c_str(), pattern.c_str(),
+            bioutils::algorithms::PatternCountAlgorithms::BruteForceByHand);
+        break;
+    case 2:
+        count = bioutils::algorithms::PatternCount(text.c_str(), pattern.c_str(),
+            bioutils::algorithms::PatternCountAlgorithms::BruteForce);
+        break;
+    case 3:
+        count = bioutils::algorithms::PatternCount(text.c_str(), pattern.c_str(),
+            bioutils::algorithms::PatternCountAlgorithms::RabinKarp);
+        break;
+    default:
+        count = bioutils::algorithms::PatternCount(text.c_str(), pattern.c_str(),
+            bioutils::algorithms::PatternCountAlgorithms::BruteForce);
+        break;
+    }
+
+    return count;
+}
+
 
 int
 main( int argc, char *argv[], char *envp[] )
 {
-    argparse::ArgumentParser program(PROGRAM_NAME);
-    program.add_argument("-g", "--algorithm").help("Algorithm to be applied.")
-            .action([](const std::string &value) { return std::stoi(value); })
-            .default_value(2);
-    program.add_argument("-p", "--pattern").help("k-mer pattern to count.");
-    program.add_argument("-k", "--kmer").help("Find most frequent k-mer.")
-            .action([](const std::string &value) { return std::stoi(value); });
-    program.add_argument("file").help("file contains sequences")
-            .default_value(std::string("-"));
+    CLI::App app{PROGRAM_NAME};
+    app.require_subcommand(1);
 
-    try {
-        program.parse_args(argc, argv);
-    } catch (const std::runtime_error& err) {
-        std::cout << err.what() << std::endl;
-        std::cout << program;
-        exit(0);
-    }
+    string pattern;
+    string fileName = "-";
+    int kmer;
+    int algorithm = 2;
 
-    string fileName = program.get<string>("file");
-    //FIXME: use program.present instead when argparse v2.2 is aviable.
-    try {
-        string pattern = program.get<string>("--pattern");
-        int ALG = program.get<int>("--algorithm");
-        
+    CLI::App* count_subapp = app.add_subcommand("count", "Count pattern in the sequence");
+    count_subapp->add_option("-p,--pattern", pattern, "k-mer pattern to count.")->required();
+    count_subapp->add_option("-g,--algorithm", algorithm, "Algorithm to be applied.");
+    count_subapp->add_option("file", fileName, "file contains sequences.");
+    count_subapp->callback([&]() {
         // Parse second positional argument.
-        char *text;
+        string text;
         if (fileName == "-") {
             text = bioutils::IO::read_stdin();
         } else {
-            text = bioutils::IO::read_file(fileName.c_str());
+            text = bioutils::IO::read_file(fileName);
         }
 
-        size_t count;
-        switch (ALG)
-        {
-        case 1:
-            count = bioutils::algorithms::PatternCount(text, pattern.c_str(),
-                bioutils::algorithms::PatternCountAlgorithms::BruteForceByHand);
-            break;
-        case 2:
-            count = bioutils::algorithms::PatternCount(text, pattern.c_str(),
-                bioutils::algorithms::PatternCountAlgorithms::BruteForce);
-            break;
-        case 3:
-            count = bioutils::algorithms::PatternCount(text, pattern.c_str(),
-                bioutils::algorithms::PatternCountAlgorithms::RabinKarp);
-            break;
-        default:
-            count = bioutils::algorithms::PatternCount(text, pattern.c_str(),
-                bioutils::algorithms::PatternCountAlgorithms::BruteForce);
-            break;
+        cout << count(text, pattern, algorithm) << endl;
+    });
+
+    CLI::App* index_subapp = app.add_subcommand("index", "Get index of pattern in the sequence");
+    index_subapp->add_option("-p,--pattern", pattern, "k-mer pattern to index.")->required();
+    index_subapp->add_option("file", fileName, "file contains sequences.");
+    index_subapp->callback([&]() {
+        string text;
+        if (fileName == "-") {
+            text = bioutils::IO::read_stdin();
+        } else {
+            text = bioutils::IO::read_file(fileName);
         }
 
-        printf("%i\n", count);
-        
-        free(text);
-    } catch (std::logic_error &) {
-        // Option does not exist.
-    }
+        std::vector<size_t> output;
+        bioutils::algorithms::PatternIndex(text.c_str(), pattern.c_str(), output);
 
-    try {
-        int k = program.get<int>("--kmer");
+        for (size_t i : output) {
+            cout << i << " ";
+        }
 
+        cout << endl;
+    });
+
+
+    CLI::App* freq_subapp = app.add_subcommand("freq", "Find most frequent k-mer");
+    freq_subapp->add_option("-k,--kmer", kmer, "Length of k-mer to find.")->required();
+    freq_subapp->add_option("file", fileName, "file contains sequences.");
+    freq_subapp->callback([&]() {
         string text;
         if (fileName == "-") {
             text = bioutils::IO::read_stdin();
@@ -90,16 +107,14 @@ main( int argc, char *argv[], char *envp[] )
         }
 
         set<string> results;
-        bioutils::algorithms::FrequentWords(text, k, results);
+        bioutils::algorithms::FrequentWords(text, kmer, results);
 
         for (auto kmer : results) {
             cout << kmer << endl;
         }
+    });
 
-    } catch (std::logic_error &) {
-        // Option does not exist.
-    }
-
+    CLI11_PARSE(app, argc, argv);
 
     return 0;
 }
