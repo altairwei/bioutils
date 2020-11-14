@@ -150,19 +150,18 @@ void find_do(const char *text, const char *pattern,
     }
 }
 
-void
-FrequentWords(const std::string text, const int k, std::set<std::string> &output)
+std::set<std::string>
+FrequentWords(const std::string text, const int k)
 {
     size_t t_len = text.length();
     if (t_len == 0)
-        return;
+        return std::set<std::string>();
     if (k <= 0)
-        return;
+        return std::set<std::string>();
     if (k > t_len)
-        return;
+        return std::set<std::string>();
 
     // Total count of k-mer
-    // 究竟要如何理解 k-mer 的数量？
     size_t n_kmer = t_len - k + 1;
 
     // Array to store counts for each k-mer.
@@ -183,6 +182,7 @@ FrequentWords(const std::string text, const int k, std::set<std::string> &output
     }
 
     // Put most frequent patterns together
+    std::set<std::string> output;
     for (int i = 0; i < n_kmer; i++) {
         if (kmer_count[i] == max_count) {
             string par = text.substr(i, k);
@@ -190,7 +190,31 @@ FrequentWords(const std::string text, const int k, std::set<std::string> &output
             output.insert(par);
         }
     }
+
+    return output;
 }
+
+
+std::set<std::string>
+FrequentWordsFast(const std::string text, const int k)
+{
+    return std::set<std::string>();
+}
+
+
+std::map<std::string, size_t>
+FrequencyTable(const std::string text, const int k)
+{
+    return std::map<std::string, size_t>();
+}
+
+
+std::string
+MaxMap(std::map<std::string, size_t> &input_map)
+{
+    return std::string();
+}
+
 
 inline bool
 is_ntp(char c)

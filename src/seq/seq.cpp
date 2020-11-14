@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define PROGRAM_NAME "bpseq"
+#define PROGRAM_NAME "bioseq - A tool to manipulate sequences."
 
 static const map<char, char> base_comp = {
     {'A', 'T'}, {'T', 'A'},

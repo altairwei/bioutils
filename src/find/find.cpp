@@ -7,7 +7,6 @@
 #include <iostream>
 #include <fstream>
 
-#include <argparse/argparse.hpp>
 #include <CLI/CLI.hpp>
 
 #include "dataio.h"
@@ -106,9 +105,7 @@ main( int argc, char *argv[], char *envp[] )
             text = bioutils::IO::read_file(fileName);
         }
 
-        set<string> results;
-        bioutils::algorithms::FrequentWords(text, kmer, results);
-
+        set<string> results = bioutils::algorithms::FrequentWords(text, kmer);
         for (auto kmer : results) {
             cout << kmer << endl;
         }

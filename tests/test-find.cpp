@@ -9,137 +9,127 @@
 using namespace bioutils::algorithms;
 
 TEST(TestFrequentWords, HandleNormalPattern) {
-    std::set<std::string> expected = {"ATG"};
-    std::set<std::string> output;
-    std::string seq = "ATGATGATG";
-    FrequentWords(seq, 3, output);
-    EXPECT_EQ(expected, output);
+    EXPECT_EQ(
+        FrequentWords("ATGATGATG", 3),
+        std::set<std::string>({"ATG"})
+    );
 
-    expected.clear();
-    output.clear();
-    seq.clear();
-    expected = {"CATG", "GCAT"};
-    seq = "ACGTTGCATGTCGCATGATGCATGAGAGCT";
-    FrequentWords(seq, 4, output);
-    EXPECT_EQ(expected, output);
+    EXPECT_EQ(
+        FrequentWords("ACGTTGCATGTCGCATGATGCATGAGAGCT", 4),
+        std::set<std::string>({"CATG", "GCAT"})
+    );
 
-    expected.clear();
-    output.clear();
-    seq = "CGGAAGCGAGATTCGCGTGGCGTGATTCCGGCGGGCGTGGAG"
-        "AAGCGAGATTCATTCAAGCCGGGAGGCGTGGCGTGGCGTGGC"
-        "GTGCGGATTCAAGCCGGCGGGCGTGATTCGAGCGGCGGATTC"
-        "GAGATTCCGGGCGTGCGGGCGTGAAGCGCGTGGAGGAGGCGT"
-        "GGCGTGCGGGAGGAGAAGCGAGAAGCCGGATTCAAGCAAGCA"
-        "TTCCGGCGGGAGATTCGCGTGGAGGCGTGGAGGCGTGGAGGC"
-        "GTGCGGCGGGAGATTCAAGCCGGATTCGCGTGGAGAAGCGAG"
-        "AAGCGCGTGCGGAAGCGAGGAGGAGAAGCATTCGCGTGATTC"
-        "CGGGAGATTCAAGCATTCGCGTGCGGCGGGAGATTCAAGCGA"
-        "GGAGGCGTGAAGCAAGCAAGCAAGCGCGTGGCGTGCGGCGGG"
-        "AGAAGCAAGCGCGTGATTCGAGCGGGCGTGCGGAAGCGAGCGG";
-    expected = {"CGGCGGGAGATT", "CGGGAGATTCAA", 
-                "CGTGCGGCGGGA", "CGTGGAGGCGTG",
-                "CGTGGCGTGCGG", "GCGTGCGGCGGG",
-                "GCGTGGAGGCGT", "GCGTGGCGTGCG", 
-                "GGAGAAGCGAGA", "GGAGATTCAAGC",
-                "GGCGGGAGATTC", "GGGAGATTCAAG",
-                "GTGCGGCGGGAG", "TGCGGCGGGAGA"};
-    FrequentWords(seq, 12, output);
-    EXPECT_EQ(expected, output);
+
+    EXPECT_EQ(
+        FrequentWords(
+            "CGGAAGCGAGATTCGCGTGGCGTGATTCCGGCGGGCGTGGAG"
+            "AAGCGAGATTCATTCAAGCCGGGAGGCGTGGCGTGGCGTGGC"
+            "GTGCGGATTCAAGCCGGCGGGCGTGATTCGAGCGGCGGATTC"
+            "GAGATTCCGGGCGTGCGGGCGTGAAGCGCGTGGAGGAGGCGT"
+            "GGCGTGCGGGAGGAGAAGCGAGAAGCCGGATTCAAGCAAGCA"
+            "TTCCGGCGGGAGATTCGCGTGGAGGCGTGGAGGCGTGGAGGC"
+            "GTGCGGCGGGAGATTCAAGCCGGATTCGCGTGGAGAAGCGAG"
+            "AAGCGCGTGCGGAAGCGAGGAGGAGAAGCATTCGCGTGATTC"
+            "CGGGAGATTCAAGCATTCGCGTGCGGCGGGAGATTCAAGCGA"
+            "GGAGGCGTGAAGCAAGCAAGCAAGCGCGTGGCGTGCGGCGGG"
+            "AGAAGCAAGCGCGTGATTCGAGCGGGCGTGCGGAAGCGAGCGG", 12),
+        std::set<std::string>({
+            "CGGCGGGAGATT", "CGGGAGATTCAA", 
+            "CGTGCGGCGGGA", "CGTGGAGGCGTG",
+            "CGTGGCGTGCGG", "GCGTGCGGCGGG",
+            "GCGTGGAGGCGT", "GCGTGGCGTGCG", 
+            "GGAGAAGCGAGA", "GGAGATTCAAGC",
+            "GGCGGGAGATTC", "GGGAGATTCAAG",
+            "GTGCGGCGGGAG", "TGCGGCGGGAGA"})
+    );
 }
 
 TEST(TestFrequentWords, CountFirstKmer) {
     // This dataset just checks if you’re counting the first kmer
     //  in Text(TGG in this example).
-    std::string seq = "TGGTAGCGACGTTGGTCCCGCCGCTTGAGAATCTGGATGAACA"
-        "TAAGCTCCCACTTGGCTTATTCAGAGAACTGGTCAACACTT"
-        "GTCTCTCCCAGCCAGGTCTGACCACCGGGCAACTTTTAGAG"
-        "CACTATCGTGGTACAAATAATGCTGCCAC";
-    std::set<std::string> expected = {"TGG"};
-    std::set<std::string> output;
-    FrequentWords(seq, 3, output);
-    EXPECT_EQ(expected, output);
+    EXPECT_EQ(
+        FrequentWords(
+            "TGGTAGCGACGTTGGTCCCGCCGCTTGAGAATCTGGATGAACA"
+            "TAAGCTCCCACTTGGCTTATTCAGAGAACTGGTCAACACTT"
+            "GTCTCTCCCAGCCAGGTCTGACCACCGGGCAACTTTTAGAG"
+            "CACTATCGTGGTACAAATAATGCTGCCAC", 3),
+        std::set<std::string>({"TGG"})
+    );
 }
 
 TEST(TestFrequentWords, CountLastKmer) {
     // This dataset just checks if you’re counting the last kmer
     //  in Text (TTTT in this example).
-    std::string seq = "CAGTGGCAGATGACATTTTGCTGGTCGACTGGTTACAACAACG"
-        "CCTGGGGCTTTTGAGCAACGAGACTTTTCAATGTTGCACCG"
-        "TTTGCTGCATGATATTGAAAACAATATCACCAAATAAATAA"
-        "CGCCTTAGTAAGTAGCTTTT";
-    std::set<std::string> expected = {"TTTT"};
-    std::set<std::string> output;
-    FrequentWords(seq, 4, output);
-    EXPECT_EQ(expected, output);
+    EXPECT_EQ(
+        FrequentWords(
+            "CAGTGGCAGATGACATTTTGCTGGTCGACTGGTTACAACAACG"
+            "CCTGGGGCTTTTGAGCAACGAGACTTTTCAATGTTGCACCG"
+            "TTTGCTGCATGATATTGAAAACAATATCACCAAATAAATAA"
+            "CGCCTTAGTAAGTAGCTTTT", 4),
+        std::set<std::string>({"TTTT"})
+    );
 }
 
 TEST(TestFrequentWords, OverlappingOccurrences) {
     // This dataset checks if your code correctly handles cases
     //  where there are overlapping occurrences of Pattern
     //  throughout Text.
-    std::string seq = "ATACAATTACAGTCTGGAACCGGATGAACTGGCCGCAGGTTAA"
-        "CAACAGAGTTGCCAGGCACTGCCGCTGACCAGCAACAACAA"
-        "CAATGACTTTGACGCGAAGGGGATGGCATGAGCGAACTGAT"
-        "CGTCAGCCGTCAGCAACGAGTATTGTTGCTGACCCTTAACA"
-        "ATCCCGCCGCACGTAATGCGCTAACTAATGCCCTGCTG";
-    std::set<std::string> expected = {"AACAA"};
-    std::set<std::string> output;
-    FrequentWords(seq, 5, output);
-    EXPECT_EQ(expected, output);
+    EXPECT_EQ(
+        FrequentWords(
+            "ATACAATTACAGTCTGGAACCGGATGAACTGGCCGCAGGTTAA"
+            "CAACAGAGTTGCCAGGCACTGCCGCTGACCAGCAACAACAA"
+            "CAATGACTTTGACGCGAAGGGGATGGCATGAGCGAACTGAT"
+            "CGTCAGCCGTCAGCAACGAGTATTGTTGCTGACCCTTAACA"
+            "ATCCCGCCGCACGTAATGCGCTAACTAATGCCCTGCTG", 5),
+        std::set<std::string>({"AACAA"})
+    );
 }
 
 TEST(TestFrequentWords, OutputAllMostFrequentKmer) {
     // This test dataset checks if your code correctly handles ties
     //  (i.e. your code actually outputs ALL “most frequent” kmers,
     //  and not just a single “most frequent” kmer).
-    std::string seq = "CCAGCGGGGGTTGATGCTCTGGGGGTCACAAGATTGCATTTTT"
-        "ATGGGGTTGCAAAAATGTTTTTTACGGCAGATTCATTTAAA"
-        "ATGCCCACTGGCTGGAGACATAGCCCGGATGCGCGTCTTTT"
-        "ACAACGTATTGCGGGGTAAAATCGTAGATGTTTTAAAATAG"
-        "GCGTAAC";
-    std::set<std::string> expected = {"AAAAT", "GGGGT", "TTTTA"};
-    std::set<std::string> output;
-    FrequentWords(seq, 5, output);
-    EXPECT_EQ(expected, output);
+    EXPECT_EQ(
+        FrequentWords(
+            "CCAGCGGGGGTTGATGCTCTGGGGGTCACAAGATTGCATTTTT"
+            "ATGGGGTTGCAAAAATGTTTTTTACGGCAGATTCATTTAAA"
+            "ATGCCCACTGGCTGGAGACATAGCCCGGATGCGCGTCTTTT"
+            "ACAACGTATTGCGGGGTAAAATCGTAGATGTTTTAAAATAG"
+            "GCGTAAC", 5),
+        std::set<std::string>({"AAAAT", "GGGGT", "TTTTA"})
+    );
 }
 
 TEST(TestFrequentWords, HandleEmptyPattern) {
-    std::set<std::string> expected = {};
-    std::set<std::string> output;
-    FrequentWords("", 3, output);
-    EXPECT_EQ(expected, output);
-
-    expected.clear();
-    output.clear();
-    expected = {};
-    FrequentWords("ATCGTAGTCGCTAG", 0, output);
-    EXPECT_EQ(expected, output);
+    EXPECT_EQ(
+        FrequentWords("", 3),
+        std::set<std::string>({})
+    );
+    
+    EXPECT_EQ(
+        FrequentWords("ATCGTAGTCGCTAG", 0),
+        std::set<std::string>({})
+    );
 }
 
 TEST(TestFrequentWords, HandleOutOfBounds) {
-    std::set<std::string> expected = {};
-    std::set<std::string> output;
-
-    // k-mer can not be negative.
-    expected.clear();
-    output.clear();
-    expected = {};
-    FrequentWords("ATCGTAGTCGCTAG", -4, output);
-    EXPECT_EQ(expected, output);
+    // k-mer can not be negative.    
+    EXPECT_EQ(
+        FrequentWords("ATCGTAGTCGCTAG", -4),
+        std::set<std::string>({})
+    );
 
     // k-mer equals to sequence length
-    expected.clear();
-    output.clear();
-    expected = {"ATG"};
-    FrequentWords("ATG", 3, output);
-    EXPECT_EQ(expected, output);
+    EXPECT_EQ(
+        FrequentWords("ATG", 3),
+        std::set<std::string>({"ATG"})
+    );
 
-    // k-mer is larger than sequence length
-    expected.clear();
-    output.clear();
-    expected = {};
-    FrequentWords("ATG", 4, output);
-    EXPECT_EQ(expected, output);
+    // k-mer is larger than sequence length    
+    EXPECT_EQ(
+        FrequentWords("ATG", 4),
+        std::set<std::string>({})
+    );
 }
 
 
