@@ -83,8 +83,7 @@ main( int argc, char *argv[], char *envp[] )
             text = bioutils::IO::read_file(fileName);
         }
 
-        std::vector<size_t> output;
-        bioutils::algorithms::PatternIndex(text.c_str(), pattern.c_str(), output);
+        std::vector<size_t> output = bioutils::algorithms::PatternIndex(text.c_str(), pattern.c_str());
 
         for (size_t i : output) {
             cout << i << " ";

@@ -125,16 +125,23 @@ PatternCount(const char *text, const char *pattern, enum PatternCountAlgorithms 
     }
 }
 
-void
-PatternIndex(const char *text, const char *pattern, std::vector<size_t> &output)
+static inline bool isPatternValid(const size_t seq_len, const size_t pattern_len)
 {
-    if (strlen(text) == 0 || strlen(pattern) == 0)
-        return;
+    return seq_len != 0 && pattern_len > 0 && pattern_len <= seq_len;
+}
+
+std::vector<size_t>
+PatternIndex(const char *text, const char *pattern)
+{
+    if (!isPatternValid(strlen(text), strlen(pattern)))
+        return std::vector<size_t>();
+    std::vector<size_t> output;
     find_do(text, pattern,
         [&](const size_t i, const char *, const char *){
             output.push_back(i);
         }
     );
+    return output;
 }
 
 void find_do(const char *text, const char *pattern,
@@ -154,11 +161,8 @@ std::set<std::string>
 FrequentWords(const std::string text, const int k)
 {
     size_t t_len = text.length();
-    if (t_len == 0)
-        return std::set<std::string>();
-    if (k <= 0)
-        return std::set<std::string>();
-    if (k > t_len)
+
+    if (!isPatternValid(t_len, k))
         return std::set<std::string>();
 
     // Total count of k-mer
@@ -205,7 +209,18 @@ FrequentWordsFast(const std::string text, const int k)
 std::map<std::string, size_t>
 FrequencyTable(const std::string text, const int k)
 {
-    return std::map<std::string, size_t>();
+    size_t t_len = text.length();
+    size_t n_kmer = t_len - k + 1;
+
+    if (!isPatternValid(t_len, k))
+        return std::map<std::string, size_t>();
+
+    std::map<std::string, size_t> output;
+    for (int i = 0; i < n_kmer; i++) {
+        output[text.substr(i, k)]++;
+    }
+
+    return output;
 }
 
 
