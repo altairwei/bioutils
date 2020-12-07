@@ -24,6 +24,6 @@ include_directories(
     ${gtest_INCLUDE_DIRS}
 )
 
-package_add_test(TestFind test-find.cpp)
+package_add_test(TestFind test-pattern.cpp)
 
 
