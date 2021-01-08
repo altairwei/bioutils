@@ -6,16 +6,29 @@
 
 #include "pattern.h"
 
-using namespace bioutils::algorithms;
+namespace {
 
-TEST(TestFrequentWords, HandleNormalPattern) {
+using namespace bioutils::algorithms;
+using ::testing::TestWithParam;
+using ::testing::Values;
+using ::testing::ValuesIn;
+
+typedef std::map<std::string, size_t> StrNumDict;
+
+class TestFrequentWords : public TestWithParam<FrequentWordsAlgorithms> {
+  // You can implement all the usual fixture class members here.
+  // To access the test parameter, call GetParam() from class
+  // TestWithParam<T>.
+};
+
+TEST_P(TestFrequentWords, HandleNormalPattern) {
     EXPECT_EQ(
-        FrequentWords("ATGATGATG", 3),
+        FrequentWords("ATGATGATG", 3, GetParam()),
         std::set<std::string>({"ATG"})
     );
 
     EXPECT_EQ(
-        FrequentWords("ACGTTGCATGTCGCATGATGCATGAGAGCT", 4),
+        FrequentWords("ACGTTGCATGTCGCATGATGCATGAGAGCT", 4, GetParam()),
         std::set<std::string>({"CATG", "GCAT"})
     );
 
@@ -32,7 +45,7 @@ TEST(TestFrequentWords, HandleNormalPattern) {
             "AAGCGCGTGCGGAAGCGAGGAGGAGAAGCATTCGCGTGATTC"
             "CGGGAGATTCAAGCATTCGCGTGCGGCGGGAGATTCAAGCGA"
             "GGAGGCGTGAAGCAAGCAAGCAAGCGCGTGGCGTGCGGCGGG"
-            "AGAAGCAAGCGCGTGATTCGAGCGGGCGTGCGGAAGCGAGCGG", 12),
+            "AGAAGCAAGCGCGTGATTCGAGCGGGCGTGCGGAAGCGAGCGG", 12, GetParam()),
         std::set<std::string>({
             "CGGCGGGAGATT", "CGGGAGATTCAA", 
             "CGTGCGGCGGGA", "CGTGGAGGCGTG",
@@ -44,7 +57,7 @@ TEST(TestFrequentWords, HandleNormalPattern) {
     );
 }
 
-TEST(TestFrequentWords, CountFirstKmer) {
+TEST_P(TestFrequentWords, CountFirstKmer) {
     // This dataset just checks if you’re counting the first kmer
     //  in Text(TGG in this example).
     EXPECT_EQ(
@@ -52,12 +65,12 @@ TEST(TestFrequentWords, CountFirstKmer) {
             "TGGTAGCGACGTTGGTCCCGCCGCTTGAGAATCTGGATGAACA"
             "TAAGCTCCCACTTGGCTTATTCAGAGAACTGGTCAACACTT"
             "GTCTCTCCCAGCCAGGTCTGACCACCGGGCAACTTTTAGAG"
-            "CACTATCGTGGTACAAATAATGCTGCCAC", 3),
+            "CACTATCGTGGTACAAATAATGCTGCCAC", 3, GetParam()),
         std::set<std::string>({"TGG"})
     );
 }
 
-TEST(TestFrequentWords, CountLastKmer) {
+TEST_P(TestFrequentWords, CountLastKmer) {
     // This dataset just checks if you’re counting the last kmer
     //  in Text (TTTT in this example).
     EXPECT_EQ(
@@ -65,12 +78,12 @@ TEST(TestFrequentWords, CountLastKmer) {
             "CAGTGGCAGATGACATTTTGCTGGTCGACTGGTTACAACAACG"
             "CCTGGGGCTTTTGAGCAACGAGACTTTTCAATGTTGCACCG"
             "TTTGCTGCATGATATTGAAAACAATATCACCAAATAAATAA"
-            "CGCCTTAGTAAGTAGCTTTT", 4),
+            "CGCCTTAGTAAGTAGCTTTT", 4, GetParam()),
         std::set<std::string>({"TTTT"})
     );
 }
 
-TEST(TestFrequentWords, OverlappingOccurrences) {
+TEST_P(TestFrequentWords, OverlappingOccurrences) {
     // This dataset checks if your code correctly handles cases
     //  where there are overlapping occurrences of Pattern
     //  throughout Text.
@@ -80,12 +93,12 @@ TEST(TestFrequentWords, OverlappingOccurrences) {
             "CAACAGAGTTGCCAGGCACTGCCGCTGACCAGCAACAACAA"
             "CAATGACTTTGACGCGAAGGGGATGGCATGAGCGAACTGAT"
             "CGTCAGCCGTCAGCAACGAGTATTGTTGCTGACCCTTAACA"
-            "ATCCCGCCGCACGTAATGCGCTAACTAATGCCCTGCTG", 5),
+            "ATCCCGCCGCACGTAATGCGCTAACTAATGCCCTGCTG", 5, GetParam()),
         std::set<std::string>({"AACAA"})
     );
 }
 
-TEST(TestFrequentWords, OutputAllMostFrequentKmer) {
+TEST_P(TestFrequentWords, OutputAllMostFrequentKmer) {
     // This test dataset checks if your code correctly handles ties
     //  (i.e. your code actually outputs ALL “most frequent” kmers,
     //  and not just a single “most frequent” kmer).
@@ -95,42 +108,58 @@ TEST(TestFrequentWords, OutputAllMostFrequentKmer) {
             "ATGGGGTTGCAAAAATGTTTTTTACGGCAGATTCATTTAAA"
             "ATGCCCACTGGCTGGAGACATAGCCCGGATGCGCGTCTTTT"
             "ACAACGTATTGCGGGGTAAAATCGTAGATGTTTTAAAATAG"
-            "GCGTAAC", 5),
+            "GCGTAAC", 5, GetParam()),
         std::set<std::string>({"AAAAT", "GGGGT", "TTTTA"})
     );
 }
 
-TEST(TestFrequentWords, HandleEmptyPattern) {
+TEST_P(TestFrequentWords, HandleEmptyPattern) {
     EXPECT_EQ(
-        FrequentWords("", 3),
+        FrequentWords("", 3, GetParam()),
         std::set<std::string>({})
     );
     
     EXPECT_EQ(
-        FrequentWords("ATCGTAGTCGCTAG", 0),
+        FrequentWords("ATCGTAGTCGCTAG", 0, GetParam()),
         std::set<std::string>({})
     );
 }
 
-TEST(TestFrequentWords, HandleOutOfBounds) {
+TEST_P(TestFrequentWords, HandleOutOfBounds) {
     // k-mer can not be negative.    
     EXPECT_EQ(
-        FrequentWords("ATCGTAGTCGCTAG", -4),
+        FrequentWords("ATCGTAGTCGCTAG", -4, GetParam()),
         std::set<std::string>({})
     );
 
     // k-mer equals to sequence length
     EXPECT_EQ(
-        FrequentWords("ATG", 3),
+        FrequentWords("ATG", 3, GetParam()),
         std::set<std::string>({"ATG"})
     );
 
     // k-mer is larger than sequence length    
     EXPECT_EQ(
-        FrequentWords("ATG", 4),
+        FrequentWords("ATG", 4, GetParam()),
         std::set<std::string>({})
     );
 }
+
+
+INSTANTIATE_TEST_SUITE_P(
+    TestAllFrequentWords, TestFrequentWords,
+    Values(FrequentWordsAlgorithms::Slow, FrequentWordsAlgorithms::Fast),
+    [](const testing::TestParamInfo<TestFrequentWords::ParamType>& info) {
+        switch (info.param)
+        {
+        case FrequentWordsAlgorithms::Slow:
+            return "Slow";
+        case FrequentWordsAlgorithms::Fast:
+            return "Fast";
+        default:
+            return "Unknown";
+        }
+    });
 
 
 TEST(TestPatternIndex, HandleNormalInput) {
@@ -333,7 +362,6 @@ TEST(TestPatternIndex, NonNucleotide) {
     );
 }
 
-typedef std::map<std::string, size_t> StrNumDict;
 TEST(TestFrequencyTable, NormalInput) {
     EXPECT_EQ(
         FrequencyTable("ACGTTTCACGTTTTACGG", 3),
@@ -394,3 +422,82 @@ TEST(TestFrequencyTable, EmptyInput) {
         })
     );
 }
+
+TEST(TestPatternToNumber, NormalInput) {
+    EXPECT_EQ(
+        PatternToNumber("A"),
+        0b00
+    );
+
+    EXPECT_EQ(
+        PatternToNumber("T"),
+        0b01
+    );
+
+    EXPECT_EQ(
+        PatternToNumber("C"),
+        0b10
+    );
+
+    EXPECT_EQ(
+        PatternToNumber("G"),
+        0b11
+    );
+
+    EXPECT_EQ(
+        PatternToNumber("ATCG"),
+        0b00011011
+    );
+
+    EXPECT_EQ(
+        PatternToNumber("ATG"),
+        0b000111
+    );
+
+    EXPECT_EQ(
+        PatternToNumber("TAA"),
+        0b010000
+    );
+}
+
+TEST(TestMaxMap, NormalInput) {
+    EXPECT_EQ(
+        MaxMap(
+            StrNumDict({
+                {"ATCT", 5},
+                {"AGAAC", 6},
+                {"GAT", 1}
+            })
+        ),
+        6
+    );
+
+    EXPECT_EQ(
+        MaxMap(
+            StrNumDict({
+                {"ATCT", 5},
+                {"AGAA", 6},
+                {"GATA", 1},
+                {"GGGATA", 13},
+                {"GAATTTA", 100},
+                {"CATA", 61},
+                {"GATAA", 14},
+                {"TTATA", 1},
+                {"GAAATA", 13},
+                {"GCAATA", 7},
+                {"GAGATA", 15},
+                {"GACGTTA", 100},
+            })
+        ),
+        100
+    );
+}
+
+TEST(TestMaxMap, EmptyInput) {
+    EXPECT_THROW(
+        MaxMap(StrNumDict()),
+        std::runtime_error
+    );
+}
+
+} // namespace

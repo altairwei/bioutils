@@ -71,7 +71,7 @@ PatternCount_BF(const char *text, const char *pattern)
 }
 
 /**
- * @brief KM algorithm.
+ * @brief RK algorithm.
  * 
  * @param text 
  * @param pattern The max length of pattern is 32, which can be hashed in to `long long` type.
@@ -84,8 +84,8 @@ PatternCount_RK(const char *text, const char *pattern)
     unsigned int count = 0;
     size_t t_len = strlen(text);
     size_t p_len = strlen(pattern);
-    hash_t pattern_hash = hash_kmer(pattern, p_len);
-    hash_t kmer_hash = hash_kmer(text, p_len); /* hash value of first kmer */
+    hash_t pattern_hash = PatternToNumber(pattern);
+    hash_t kmer_hash = PatternToNumber(text); /* hash value of first kmer */
 
     hash_t mask = 0;
     mask = ~((~mask) << (2*(p_len - 1)));
@@ -99,7 +99,7 @@ PatternCount_RK(const char *text, const char *pattern)
         if (kmer_hash == pattern_hash)
             count++;
         // Compute hash of next k-mer
-        kmer_hash = ((kmer_hash & mask) << 2) + bpton(text[i+ p_len - 1]);
+        kmer_hash = ((kmer_hash & mask) << 2) + NucleobaseToInt(text[i+ p_len - 1]);
     }
 
     return count;
@@ -157,8 +157,24 @@ void find_do(const char *text, const char *pattern,
     }
 }
 
+std::set<std::string> FrequentWords(
+    const std::string &text, const int k, FrequentWordsAlgorithms algo /*= Slow*/)
+{
+    switch (algo)
+    {
+    case FrequentWordsAlgorithms::Slow:
+        return FrequentWordsSlow(text, k);
+        break;
+    case FrequentWordsAlgorithms::Fast:
+        return FrequentWordsFast(text, k);
+        break;
+    default:
+        break;
+    }
+}
+
 std::set<std::string>
-FrequentWords(const std::string text, const int k)
+FrequentWordsSlow(const std::string &text, const int k)
 {
     size_t t_len = text.length();
 
@@ -200,14 +216,28 @@ FrequentWords(const std::string text, const int k)
 
 
 std::set<std::string>
-FrequentWordsFast(const std::string text, const int k)
+FrequentWordsFast(const std::string &text, const int k)
 {
-    return std::set<std::string>();
+    size_t t_len = text.length();
+
+    if (!isPatternValid(t_len, k))
+        return std::set<std::string>();
+
+    auto kmer_freq_table = FrequencyTable(text, k);
+    size_t max = MaxMap(kmer_freq_table);
+
+    std::set<std::string> max_freq;
+    for (auto p : kmer_freq_table) {
+        if (p.second == max)
+            max_freq.insert(p.first);
+    }
+
+    return max_freq;
 }
 
 
 std::map<std::string, size_t>
-FrequencyTable(const std::string text, const int k)
+FrequencyTable(const std::string &text, const int k)
 {
     size_t t_len = text.length();
     size_t n_kmer = t_len - k + 1;
@@ -224,10 +254,22 @@ FrequencyTable(const std::string text, const int k)
 }
 
 
-std::string
-MaxMap(std::map<std::string, size_t> &input_map)
+size_t
+MaxMap(std::map<std::string, size_t> &input_map) noexcept(false)
 {
-    return std::string();
+    if (input_map.empty())
+        throw std::runtime_error("input map is empty.");
+
+    auto p = input_map.cbegin();
+    size_t max = (*p++).second;
+
+    while (p != input_map.cend()) {
+        size_t cur = (*p++).second;
+        if (cur > max)
+            max = cur;
+    }
+
+    return max;
 }
 
 
@@ -251,7 +293,7 @@ is_ntp(char c)
  * @return int 
  */
 inline int
-bpton(char base)
+NucleobaseToInt(char base)
 {
     int val;
     switch (toupper(base))
@@ -277,12 +319,14 @@ bpton(char base)
 }
 
 hash_t
-hash_kmer(const char *kmer, size_t len)
+PatternToNumber(const std::string &kmer)
 {
     hash_t hash = 0;
+    size_t len = kmer.length();
+    auto p = kmer.begin();
 
     while (len-- > 0) {
-        int val = bpton(*kmer++);
+        int val = NucleobaseToInt(*p++);
         hash += val << 2*len;
     }
 

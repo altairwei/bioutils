@@ -18,8 +18,8 @@ unsigned int PatternCount_BFH(const char *, const char *);
 unsigned int PatternCount_BF(const char *, const char *);
 unsigned int PatternCount_KM(const char *, const char *);
 void FrequentWords(const std::string text, const int k, std::set<std::string> &result);
-hash_t hash_kmer(const char *, size_t);
+hash_t PatternToNumber(const char *, size_t);
 bool is_ntp(char c);
-int bpton(char);
+int NucleobaseToInt(char);
 
 #endif //BPFIND_H
