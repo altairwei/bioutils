@@ -1,5 +1,7 @@
 #include "pattern.h"
 
+#include <cstring>
+
 using namespace std;
 
 namespace bioutils {
@@ -255,7 +257,7 @@ FrequencyTable(const std::string &text, const int k)
 
 
 size_t
-MaxMap(std::map<std::string, size_t> &input_map) noexcept(false)
+MaxMap(const std::map<std::string, size_t> &input_map) noexcept(false)
 {
     if (input_map.empty())
         throw std::runtime_error("input map is empty.");

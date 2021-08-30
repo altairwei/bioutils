@@ -1,5 +1,5 @@
 include(GoogleTest)
-find_package(gtest REQUIRED)
+find_package(GTest REQUIRED)
 
 macro(package_add_test TESTNAME)
     # create an exectuable in which the tests will be stored

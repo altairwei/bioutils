@@ -32,7 +32,7 @@ std::set<std::string> FrequentWords(const std::string &text, const int k, Freque
 std::set<std::string> FrequentWordsSlow(const std::string &text, const int k);
 std::set<std::string> FrequentWordsFast(const std::string &text, const int k);
 std::map<std::string, size_t> FrequencyTable(const std::string &text, const int k);
-size_t MaxMap(std::map<std::string, size_t> &input_map);
+size_t MaxMap(const std::map<std::string, size_t> &input_map);
 
 } // algorithms
 
