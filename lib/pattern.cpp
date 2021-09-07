@@ -8,13 +8,9 @@ namespace bioutils {
 
 namespace algorithms {
 
-/**
- * @brief Brute force algorithm by hand.
- * 
- * @param text 
- * @param pattern 
- * @return size_t
- */
+#define PatternLoopCount(text_length, pattern_length)  (text_length) - (pattern_length) + 1
+
+/** Brute force algorithm by hand. */
 static
 size_t
 PatternCount_BFH(const char *text, const char *pattern)
@@ -50,13 +46,7 @@ PatternCount_BFH(const char *text, const char *pattern)
     return count;
 }
 
-/**
- * @brief Brute force algorithm.
- * 
- * @param text 
- * @param pattern 
- * @return size_t
- */
+/** Brute force algorithm. */
 static
 size_t
 PatternCount_BF(const char *text, const char *pattern)
@@ -73,7 +63,7 @@ PatternCount_BF(const char *text, const char *pattern)
 }
 
 /**
- * @brief RK algorithm.
+ * @brief PatternCount implemented with RK algorithm.
  * 
  * @param text 
  * @param pattern The max length of pattern is 32, which can be hashed in to `long long` type.
@@ -96,7 +86,7 @@ PatternCount_RK(const char *text, const char *pattern)
     for (; t_len > 1 && !is_ntp(text[t_len -1]); t_len--)
         continue;
 
-    for (int i = 1; i < t_len - p_len + 1; i++) {
+    for (int i = 1; i < PatternLoopCount(t_len, p_len); i++) {
         // If hash values are matched then k-mer and pattern are matched.
         if (kmer_hash == pattern_hash)
             count++;
@@ -107,6 +97,14 @@ PatternCount_RK(const char *text, const char *pattern)
     return count;
 }
 
+/**
+ * @brief Find the number of times that a k-mer appears as a substring of text.
+ * 
+ * @param text Text to find pattern.
+ * @param pattern k-mer
+ * @param algo 
+ * @return size_t Number of times
+ */
 size_t 
 PatternCount(const char *text, const char *pattern, enum PatternCountAlgorithms algo) noexcept(false)
 {
@@ -152,27 +150,39 @@ void find_do(const char *text, const char *pattern,
     size_t text_len = strlen(text);
     size_t pattern_len = strlen(pattern);
 
-    for (size_t i = 0; i < text_len - pattern_len + 1; i++) {
+    for (size_t i = 0; i < PatternLoopCount(text_len, pattern_len); i++) {
         if (strncmp(&text[i], pattern, pattern_len) == 0) {
             callback(i, text, pattern);
         }
     }
 }
 
+/**
+ * @brief Find the most frequent k-mers in a string.
+ * 
+ * @param text Text to search
+ * @param k Length of k-mer
+ * @param algo Choose an algorithms
+ * @return std::set<std::string> All most frequent k-mers in text.
+ */
 std::set<std::string> FrequentWords(
-    const std::string &text, const int k, FrequentWordsAlgorithms algo /*= Slow*/)
+    const std::string &text, const int k, AlgorithmEfficiency algo /*= Slow*/)
 {
     switch (algo)
     {
-    case FrequentWordsAlgorithms::Slow:
+    case AlgorithmEfficiency::Slow:
         return FrequentWordsSlow(text, k);
         break;
-    case FrequentWordsAlgorithms::Fast:
+    case AlgorithmEfficiency::Fast:
+    case AlgorithmEfficiency::Faster:
+    case AlgorithmEfficiency::Fastest:
         return FrequentWordsFast(text, k);
         break;
     default:
         break;
     }
+
+    return std::set<std::string>();
 }
 
 std::set<std::string>
@@ -184,7 +194,7 @@ FrequentWordsSlow(const std::string &text, const int k)
         return std::set<std::string>();
 
     // Total count of k-mer
-    size_t n_kmer = t_len - k + 1;
+    size_t n_kmer = PatternLoopCount(t_len, k);
 
     // Array to store counts for each k-mer.
     vector<int> kmer_count(n_kmer);
@@ -237,25 +247,44 @@ FrequentWordsFast(const std::string &text, const int k)
     return max_freq;
 }
 
-
+/**
+ * @brief Make a table corresponding to counting the number of occurrences of every k-mer.
+ * 
+ *  We would slide a length-k window Text, and if the current k-mer substring
+ *  of text does not occur in the table, then we would create a new entry for
+ *  it. Otherwise, we would add 1 to the entry corresponding to the current
+ *  k-mer substring of Text. We call this table the frequency table for Text
+ *  and k.
+ * 
+ * @param text Text to search
+ * @param k Length of k-mer
+ * @return std::map<std::string, size_t> A string-number map
+ */
 std::map<std::string, size_t>
 FrequencyTable(const std::string &text, const int k)
 {
     size_t t_len = text.length();
-    size_t n_kmer = t_len - k + 1;
+    size_t n_kmer = PatternLoopCount(t_len, k);
 
     if (!isPatternValid(t_len, k))
         return std::map<std::string, size_t>();
 
     std::map<std::string, size_t> output;
     for (int i = 0; i < n_kmer; i++) {
+        // Performing an insertion if such key does not already exist and
+        // the mapped value is value-initialized (in this case, it's zero).
         output[text.substr(i, k)]++;
     }
 
     return output;
 }
 
-
+/**
+ * @brief Find the maximum value of a map
+ * 
+ * @param input_map Input map
+ * @return size_t Maxium value of the map
+ */
 size_t
 MaxMap(const std::map<std::string, size_t> &input_map) noexcept(false)
 {

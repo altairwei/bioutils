@@ -27,8 +27,8 @@ void find_do(const char *text, const char *pattern,
 std::size_t PatternCount(const char *text, const char *pattern, enum PatternCountAlgorithms algo);
 std::vector<size_t> PatternIndex(const char *text, const char *pattern);
 
-enum class FrequentWordsAlgorithms {Slow, Fast, Faster};
-std::set<std::string> FrequentWords(const std::string &text, const int k, FrequentWordsAlgorithms algo = FrequentWordsAlgorithms::Slow);
+enum class AlgorithmEfficiency {Slow, Fast, Faster, Fastest};
+std::set<std::string> FrequentWords(const std::string &text, const int k, AlgorithmEfficiency algo = AlgorithmEfficiency::Slow);
 std::set<std::string> FrequentWordsSlow(const std::string &text, const int k);
 std::set<std::string> FrequentWordsFast(const std::string &text, const int k);
 std::map<std::string, size_t> FrequencyTable(const std::string &text, const int k);

@@ -15,7 +15,7 @@ using ::testing::ValuesIn;
 
 typedef std::map<std::string, size_t> StrNumDict;
 
-class TestFrequentWords : public TestWithParam<FrequentWordsAlgorithms> {
+class TestFrequentWords : public TestWithParam<AlgorithmEfficiency> {
   // You can implement all the usual fixture class members here.
   // To access the test parameter, call GetParam() from class
   // TestWithParam<T>.
@@ -148,13 +148,13 @@ TEST_P(TestFrequentWords, HandleOutOfBounds) {
 
 INSTANTIATE_TEST_SUITE_P(
     TestAllFrequentWords, TestFrequentWords,
-    Values(FrequentWordsAlgorithms::Slow, FrequentWordsAlgorithms::Fast),
+    Values(AlgorithmEfficiency::Slow, AlgorithmEfficiency::Fast),
     [](const testing::TestParamInfo<TestFrequentWords::ParamType>& info) {
         switch (info.param)
         {
-        case FrequentWordsAlgorithms::Slow:
+        case AlgorithmEfficiency::Slow:
             return "Slow";
-        case FrequentWordsAlgorithms::Fast:
+        case AlgorithmEfficiency::Fast:
             return "Fast";
         default:
             return "Unknown";
