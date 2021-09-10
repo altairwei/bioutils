@@ -342,7 +342,12 @@ NucleobaseToInt(char base)
         val = 3;
         break;
     default:
-        throw std::logic_error("Unknown base.");
+    {
+        string repr(1, base);
+        if (base == '\n') repr = "\\n";
+        if (base == '\r') repr = "\\r";
+        throw std::logic_error("Unknown base: '" + repr + "'");
+    }
         break;
     }
 
