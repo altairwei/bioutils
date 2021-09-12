@@ -7,8 +7,10 @@
 
 #include "dataio.h"
 #include "pattern.h"
+#include "exceptions.h"
 
 using namespace std;
+using namespace bioutils::utils;
 
 #define PROGRAM_NAME "bioseq - A tool to manipulate sequences."
 
@@ -27,7 +29,11 @@ ReverseComplement(const string &oriSeq) noexcept(false)
 
     // Get complementary
     for (const char &nucleotide : oriSeq) {
-        revSeq.push_back(base_comp.at(nucleotide));
+        try {
+            revSeq.push_back(base_comp.at(nucleotide));
+        } catch(std::out_of_range &) {
+            throw UnknownBaseError(nucleotide);
+        }
     }
 
     // Get reversed
@@ -60,13 +66,8 @@ main(int argc, char *argv[], char *envp[])
 
     string output = seq;
 
-    if (do_reverse_complement) {
-        try {
-            output = ReverseComplement(seq);
-        } catch(std::out_of_range &) {
-            std::cout << "Unknown base." << std::endl;
-        }
-    }
+    if (do_reverse_complement)
+        output = ReverseComplement(seq);
 
     if (do_hash && !output.empty()) {
         auto hash = bioutils::algorithms::PatternToNumber(output);

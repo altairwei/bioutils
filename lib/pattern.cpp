@@ -2,7 +2,10 @@
 
 #include <cstring>
 
+#include "exceptions.h"
+
 using namespace std;
+using namespace bioutils::utils;
 
 namespace bioutils {
 
@@ -329,26 +332,20 @@ NucleobaseToInt(char base)
     int val;
     switch (toupper(base))
     {
-    case 'A':
-        val = 0;
-        break;
-    case 'T':
-        val = 1;
-        break;
-    case 'C':
-        val = 2;
-        break;
-    case 'G':
-        val = 3;
-        break;
-    default:
-    {
-        string repr(1, base);
-        if (base == '\n') repr = "\\n";
-        if (base == '\r') repr = "\\r";
-        throw std::logic_error("Unknown base: '" + repr + "'");
-    }
-        break;
+        case 'A':
+            val = 0;
+            break;
+        case 'T':
+            val = 1;
+            break;
+        case 'C':
+            val = 2;
+            break;
+        case 'G':
+            val = 3;
+            break;
+        default:
+            throw UnknownBaseError(base);
     }
 
     return val;
