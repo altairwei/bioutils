@@ -5,13 +5,13 @@
 BEGIN_NAMESPACE(bioutils)
 BEGIN_NAMESPACE(utils)
 
-UnknownBaseError::UnknownBaseError(const char base)
-    : std::runtime_error("Unknown base: '" + characterPrintable(base) + "'")
+UnknownNucleotideError::UnknownNucleotideError(const char base)
+    : std::runtime_error("Unknown nucleotide: '" + characterPrintable(base) + "'")
 {
 
 }
 
-std::ostream& operator<<(std::ostream &strm, const UnknownBaseError &e) {
+std::ostream& operator<<(std::ostream &strm, const UnknownNucleotideError &e) {
   return strm << e.what();
 }
 

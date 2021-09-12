@@ -32,7 +32,7 @@ ReverseComplement(const string &oriSeq) noexcept(false)
         try {
             revSeq.push_back(base_comp.at(nucleotide));
         } catch(std::out_of_range &) {
-            throw UnknownBaseError(nucleotide);
+            throw UnknownNucleotideError(nucleotide);
         }
     }
 

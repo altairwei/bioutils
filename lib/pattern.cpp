@@ -345,7 +345,7 @@ NucleobaseToInt(char base)
             val = 3;
             break;
         default:
-            throw UnknownBaseError(base);
+            throw UnknownNucleotideError(base);
     }
 
     return val;

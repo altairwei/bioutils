@@ -9,14 +9,14 @@
 BEGIN_NAMESPACE(bioutils)
 BEGIN_NAMESPACE(utils)
 
-class UnknownBaseError : public std::runtime_error {
+class UnknownNucleotideError : public std::runtime_error {
 
 public:
-    UnknownBaseError(const char base);
+    UnknownNucleotideError(const char base);
 
 };
 
-std::ostream& operator<<(std::ostream &strm, const UnknownBaseError &e);
+std::ostream& operator<<(std::ostream &strm, const UnknownNucleotideError &e);
 
 END_NAMESPACE(utils)
 END_NAMESPACE(bioutils)
