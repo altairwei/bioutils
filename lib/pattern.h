@@ -7,9 +7,9 @@
 #include <map>
 #include <vector>
 
-namespace bioutils {
+#include "global.h"
 
-namespace algorithms {
+BIOUTILS_BEGIN_SUB_NAMESPACE(algorithms)
 
 #define ISNTP(C) ((C) == 'A' || (C) == 'T' || (C) == 'C' || (C) == 'G' \
         || (C) == 'a' || (C) == 't' || (C) == 'c' || (C) == 'g')
@@ -34,8 +34,6 @@ std::set<std::string> FrequentWordsFast(const std::string &text, const int k);
 std::map<std::string, size_t> FrequencyTable(const std::string &text, const int k);
 size_t MaxMap(const std::map<std::string, size_t> &input_map);
 
-} // algorithms
-
-} // bioutils
+BIOUTILS_END_SUB_NAMESPACE(algorithms)
 
 #endif // LIB_PATTERN_H

@@ -6,9 +6,7 @@
 #include <fstream>
 #include <streambuf>
 
-namespace bioutils {
-
-namespace IO {
+BIOUTILS_BEGIN_SUB_NAMESPACE(IO)
 
 std::string
 read_file(const std::string &fileName)
@@ -90,7 +88,5 @@ std::string read_input(const std::string &argument)
 }
 
 
-} // IO
-
-} // bioutils
+BIOUTILS_END_SUB_NAMESPACE(IO)
 

@@ -1,7 +1,6 @@
 #include "utils.h"
 
-BEGIN_NAMESPACE(bioutils)
-BEGIN_NAMESPACE(utils)
+BIOUTILS_BEGIN_SUB_NAMESPACE(utils)
 
 std::string characterPrintable(char c) noexcept(true)
 {
@@ -30,5 +29,4 @@ std::string characterPrintable(char c) noexcept(true)
     return repr;
 }
 
-END_NAMESPACE(utils)
-END_NAMESPACE(bioutils)
+BIOUTILS_END_SUB_NAMESPACE(utils)

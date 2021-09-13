@@ -6,8 +6,7 @@
 
 #include "global.h"
 
-BEGIN_NAMESPACE(bioutils)
-BEGIN_NAMESPACE(utils)
+BIOUTILS_BEGIN_SUB_NAMESPACE(utils)
 
 class UnknownNucleotideError : public std::runtime_error {
 
@@ -18,7 +17,6 @@ public:
 
 std::ostream& operator<<(std::ostream &strm, const UnknownNucleotideError &e);
 
-END_NAMESPACE(utils)
-END_NAMESPACE(bioutils)
+BIOUTILS_END_SUB_NAMESPACE(utils)
 
 #endif // EXCEPTIONS_H

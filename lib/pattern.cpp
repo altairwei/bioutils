@@ -7,9 +7,7 @@
 using namespace std;
 using namespace bioutils::utils;
 
-namespace bioutils {
-
-namespace algorithms {
+BIOUTILS_BEGIN_SUB_NAMESPACE(algorithms)
 
 #define PatternLoopCount(text_length, pattern_length)  (text_length) - (pattern_length) + 1
 
@@ -320,14 +318,13 @@ is_ntp(char c)
     }
 }
 
-/**
- * @brief Convert DNA base to number.
- * 
- * @param base 
- * @return int 
+/*!
+    \brief Convert DNA base to number
+    
+    \param base DNA base
+    \return int Integer of DNA base
  */
-inline int
-NucleobaseToInt(char base)
+inline int NucleobaseToInt(char base)
 {
     int val;
     switch (toupper(base))
@@ -366,6 +363,6 @@ PatternToNumber(const std::string &kmer)
     return hash;
 }
 
-} // algorithms
 
-} // bioutils
+
+BIOUTILS_END_SUB_NAMESPACE(algorithms)
