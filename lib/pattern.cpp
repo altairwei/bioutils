@@ -324,7 +324,7 @@ is_ntp(char c)
     \param base DNA base
     \return int Integer of DNA base
  */
-inline int NucleobaseToInt(char base)
+inline int NucleobaseToInt(const char base)
 {
     int val;
     switch (toupper(base))
@@ -332,13 +332,13 @@ inline int NucleobaseToInt(char base)
         case 'A':
             val = 0;
             break;
-        case 'T':
+        case 'C':
             val = 1;
             break;
-        case 'C':
+        case 'G':
             val = 2;
             break;
-        case 'G':
+        case 'T':
             val = 3;
             break;
         default:
@@ -348,12 +348,55 @@ inline int NucleobaseToInt(char base)
     return val;
 }
 
-hash_t
-PatternToNumber(const std::string &kmer)
+inline char IntToNucleobase(const int i)
+{
+    char base;
+    switch (i)
+    {
+        case 0:
+            base = 'A';
+            break;
+        case 1:
+            base = 'C';
+            break;
+        case 2:
+            base = 'G';
+            break;
+        case 3:
+            base = 'T';
+            break;
+        default:
+            throw std::runtime_error("Only integer 0~3 can be converted to nucleobase symbol");
+            break;
+    }
+
+    return base;
+}
+
+hash_t PatternToNumber(const std::string &pattern, AlgorithmEfficiency algo)
+{
+    switch (algo)
+    {
+    case AlgorithmEfficiency::Slow:
+        return PatternToNumberRecursive(pattern);
+        break;
+    case AlgorithmEfficiency::Fast:
+    case AlgorithmEfficiency::Faster:
+    case AlgorithmEfficiency::Fastest:
+        return PatternToNumberBitwise(pattern);
+        break;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+hash_t PatternToNumberBitwise(const std::string &pattern)
 {
     hash_t hash = 0;
-    size_t len = kmer.length();
-    auto p = kmer.begin();
+    size_t len = pattern.length();
+    auto p = pattern.begin();
 
     while (len-- > 0) {
         int val = NucleobaseToInt(*p++);
@@ -363,6 +406,30 @@ PatternToNumber(const std::string &kmer)
     return hash;
 }
 
+hash_t PatternToNumberRecursive(const std::string &pattern)
+{
+    if (pattern.empty())
+        return 0;
+
+    char base = pattern.back();
+    std::string prefix = pattern.substr(0, pattern.length() - 1);
+
+    return 4 * PatternToNumberRecursive(prefix) + NucleobaseToInt(base);
+}
+
+std::string NumberToPatternBitwise(const hash_t number, const int length)
+{
+    std::string pattern;
+
+    for (int len = length; len > 0; len--) {
+        hash_t mask = 0;
+        mask = ~((~mask) << (2*len));
+        pattern.push_back(
+            IntToNucleobase((number & mask) >> 2*(len - 1)));
+    }
+
+    return pattern;
+}
 
 
 BIOUTILS_END_SUB_NAMESPACE(algorithms)

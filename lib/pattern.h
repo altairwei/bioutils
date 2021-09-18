@@ -16,18 +16,21 @@ BIOUTILS_BEGIN_SUB_NAMESPACE(algorithms)
 
 typedef unsigned long long hash_t;
 
-hash_t PatternToNumber(const std::string &kmer);
-bool is_ntp(char c);
-int NucleobaseToInt(char);
-
 enum class PatternCountAlgorithms { BruteForce, BruteForceByHand, RabinKarp };
+enum class AlgorithmEfficiency {Slow, Fast, Faster, Fastest};
+
+hash_t PatternToNumber(const std::string &pattern, AlgorithmEfficiency algo = AlgorithmEfficiency::Slow);
+hash_t PatternToNumberBitwise(const std::string &pattern);
+hash_t PatternToNumberRecursive(const std::string &pattern);
+std::string NumberToPatternBitwise(const hash_t number, const int length);
+bool is_ntp(char c);
+int NucleobaseToInt(const char);
 
 void find_do(const char *text, const char *pattern,
     std::function<void(const size_t, const char *, const char *)> callback);
 std::size_t PatternCount(const char *text, const char *pattern, enum PatternCountAlgorithms algo);
 std::vector<size_t> PatternIndex(const char *text, const char *pattern);
 
-enum class AlgorithmEfficiency {Slow, Fast, Faster, Fastest};
 std::set<std::string> FrequentWords(const std::string &text, const int k, AlgorithmEfficiency algo = AlgorithmEfficiency::Slow);
 std::set<std::string> FrequentWordsSlow(const std::string &text, const int k);
 std::set<std::string> FrequentWordsFast(const std::string &text, const int k);

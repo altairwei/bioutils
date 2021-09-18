@@ -159,7 +159,8 @@ INSTANTIATE_TEST_SUITE_P(
         default:
             return "Unknown";
         }
-    });
+    }
+);
 
 
 TEST(TestPatternIndex, HandleNormalInput) {
@@ -423,40 +424,93 @@ TEST(TestFrequencyTable, EmptyInput) {
     );
 }
 
-TEST(TestPatternToNumber, NormalInput) {
+class TestPatternToNumber : public TestWithParam<AlgorithmEfficiency> {
+  // You can implement all the usual fixture class members here.
+  // To access the test parameter, call GetParam() from class
+  // TestWithParam<T>.
+};
+
+TEST_P(TestPatternToNumber, NormalInput) {
     EXPECT_EQ(
         PatternToNumber("A"),
         0b00
     );
 
     EXPECT_EQ(
-        PatternToNumber("T"),
+        PatternToNumber("C"),
         0b01
     );
 
     EXPECT_EQ(
-        PatternToNumber("C"),
+        PatternToNumber("G"),
         0b10
     );
 
     EXPECT_EQ(
-        PatternToNumber("G"),
+        PatternToNumber("T"),
         0b11
     );
 
     EXPECT_EQ(
-        PatternToNumber("ATCG"),
+        PatternToNumber("ACGT"),
         0b00011011
     );
 
     EXPECT_EQ(
         PatternToNumber("ATG"),
-        0b000111
+        0b001110
     );
 
     EXPECT_EQ(
         PatternToNumber("TAA"),
-        0b010000
+        0b110000
+    );
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    TestAllPatternToNumber, TestPatternToNumber,
+    Values(AlgorithmEfficiency::Slow, AlgorithmEfficiency::Fast),
+    [](const testing::TestParamInfo<TestFrequentWords::ParamType>& info) {
+        switch (info.param)
+        {
+        case AlgorithmEfficiency::Slow:
+            return "Slow";
+        case AlgorithmEfficiency::Fast:
+            return "Fast";
+        default:
+            return "Unknown";
+        }
+    }
+);
+
+TEST(TestNumberToPattern, NormalInput) {
+    EXPECT_EQ(
+        NumberToPatternBitwise(0b00, 1),
+        "A"
+    );
+    EXPECT_EQ(
+        NumberToPatternBitwise(0b01, 1),
+        "C"
+    );
+    EXPECT_EQ(
+        NumberToPatternBitwise(0b10, 1),
+        "G"
+    );
+    EXPECT_EQ(
+        NumberToPatternBitwise(0b11, 1),
+        "T"
+    );
+    EXPECT_EQ(
+        NumberToPatternBitwise(0b00011011, 4),
+        "ACGT"
+    );
+    EXPECT_EQ(
+        NumberToPatternBitwise(0b001110, 3),
+        "ATG"
+    );
+    EXPECT_EQ(
+        NumberToPatternBitwise(0b110000, 3),
+        "TAA"
     );
 }
 
