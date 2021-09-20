@@ -465,6 +465,16 @@ TEST_P(TestPatternToNumber, NormalInput) {
         PatternToNumber("TAA"),
         0b110000
     );
+
+    EXPECT_EQ(
+        PatternToNumber("AGT"),
+        11
+    );
+
+    EXPECT_EQ(
+        PatternToNumber("CTTCTCACGTACAACAAAATC"),
+        2161555804173
+    );
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -511,6 +521,21 @@ TEST(TestNumberToPattern, NormalInput) {
     EXPECT_EQ(
         NumberToPatternBitwise(0b110000, 3),
         "TAA"
+    );
+
+    EXPECT_EQ(
+        NumberToPatternBitwise(45, 4),
+        "AGTC"
+    );
+
+    EXPECT_EQ(
+        NumberToPatternBitwise(5353, 7),
+        "CCATGGC"
+    );
+
+    EXPECT_EQ(
+        NumberToPatternBitwise(7633, 10),
+        "AAACTCTCAC"
     );
 }
 

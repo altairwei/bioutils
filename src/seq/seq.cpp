@@ -71,6 +71,7 @@ main(int argc, char *argv[], char *envp[])
 
     if (do_hash && !output.empty()) {
         auto hash = bioutils::algorithms::PatternToNumber(output);
+        std::cout << hash << std::endl;
         std::cout << std::bitset<8*sizeof(hash)>(hash) << std::endl;
 
         for (int i = 0; i < (8*sizeof(hash)/2 - output.length()); i++) {
