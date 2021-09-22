@@ -92,7 +92,7 @@ PatternCount_RK(const char *text, const char *pattern)
         if (kmer_hash == pattern_hash)
             count++;
         // Compute hash of next k-mer
-        kmer_hash = ((kmer_hash & mask) << 2) + NucleobaseToInt(text[i+ p_len - 1]);
+        kmer_hash = ((kmer_hash & mask) << 2) | NucleobaseToInt(text[i+ p_len - 1]);
     }
 
     return count;
@@ -400,7 +400,7 @@ hash_t PatternToNumberBitwise(const std::string &pattern)
 
     while (len-- > 0) {
         int val = NucleobaseToInt(*p++);
-        hash += val << 2*len;
+        hash |= val << 2*len;
     }
 
     return hash;
