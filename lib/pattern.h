@@ -28,7 +28,7 @@ int NucleobaseToInt(const char);
 
 void find_do(const char *text, const char *pattern,
     std::function<void(const size_t, const char *, const char *)> callback);
-std::size_t PatternCount(const char *text, const char *pattern, enum PatternCountAlgorithms algo);
+std::size_t PatternCount(const char *text, const char *pattern, AlgorithmEfficiency algo);
 std::vector<size_t> PatternIndex(const char *text, const char *pattern);
 
 std::set<std::string> FrequentWords(const std::string &text, const int k, AlgorithmEfficiency algo = AlgorithmEfficiency::Slow);

@@ -25,19 +25,19 @@ count(const string &text, const string &pattern, const int algorithm = 2)
     {
     case 1:
         count = bioutils::algorithms::PatternCount(text.c_str(), pattern.c_str(),
-            bioutils::algorithms::PatternCountAlgorithms::BruteForceByHand);
+            bioutils::algorithms::AlgorithmEfficiency::Slow);
         break;
     case 2:
         count = bioutils::algorithms::PatternCount(text.c_str(), pattern.c_str(),
-            bioutils::algorithms::PatternCountAlgorithms::BruteForce);
+            bioutils::algorithms::AlgorithmEfficiency::Fast);
         break;
     case 3:
         count = bioutils::algorithms::PatternCount(text.c_str(), pattern.c_str(),
-            bioutils::algorithms::PatternCountAlgorithms::RabinKarp);
+            bioutils::algorithms::AlgorithmEfficiency::Faster);
         break;
     default:
         count = bioutils::algorithms::PatternCount(text.c_str(), pattern.c_str(),
-            bioutils::algorithms::PatternCountAlgorithms::BruteForce);
+            bioutils::algorithms::AlgorithmEfficiency::Fast);
         break;
     }
 

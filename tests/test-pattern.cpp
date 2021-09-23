@@ -15,6 +15,110 @@ using ::testing::ValuesIn;
 
 typedef std::map<std::string, size_t> StrNumDict;
 
+class TestPatternCount: public TestWithParam<AlgorithmEfficiency> {};
+
+TEST_P(TestPatternCount, NormalInput) {
+    EXPECT_EQ(
+        PatternCount("GCGCG", "GCG", GetParam()),
+        2
+    );
+
+    /*
+        This dataset just checks if you’re correctly counting. It is the “easiest” test. Notice that all                               
+        occurrences of CG in Text (A​CG​TA​CG​TA​CG​T) are away from the very edges (so your code                             
+        won’t fail on off­by­one errors at the beginning or at the end of Text) and that none of the                                     
+        occurrences of Pattern overlap (so your code won’t fail if you fail to account for overlaps).
+    */
+    EXPECT_EQ(
+        PatternCount("ACGTACGTACGT", "CG", GetParam()),
+        3
+    );
+
+    /*
+        This dataset checks if your code correctly handles cases where there is an occurrence of                             
+        Pattern at the very beginning of Text. Note that there are no overlapping occurrences of Pattern                               
+        (i.e. AAAA), and there is no occurrence of Pattern at the very end of Text, so assuming your                                   
+        code passed Test Dataset 1, this test would only check for off­by­one errors at the beginning of                                 
+        Text.
+    */
+    EXPECT_EQ(
+        PatternCount(
+            "AAAGAGTGTCTGATAGCAGCTTCTGAACTGGTTACCT"
+            "GCCGTGAGTAAATTAAATTTTATTGACTTAGGTCACT"
+            "AAATACTTTAACCAATATAGGCATAGCGCACAGACAG"
+            "ATAATAATTACAGAGTACACAACATCCAT", "AAA", GetParam()),
+        4
+    );
+
+    /*
+        This dataset checks if your code correctly handles cases where there is an occurrence of                             
+        Pattern at the very end of Text. Note that there are no overlapping occurrences of Pattern (i.e.                                 
+        AAAA), and there is no occurrence of Pattern at the very beginning of Text, so assuming your                                 
+        code passed Test Dataset 2, this test would only check for off­by­one errors at the end of Text.
+    */
+    EXPECT_EQ(
+        PatternCount(
+            "AGCGTGCCGAAATATGCCGCCAGACCTGCTGCGGTGG"
+            "CCTCGCCGACTTCACGGATGCCAAGTGCATAGAGGAA"
+            "GCGAGCAAAGGTGGTTTCTTTCGCTTTATCCAGCGCG"
+            "TTAACCACGTTCTGTGCCGACTTT", "TTT", GetParam()),
+        4
+    );
+
+    /*
+        This test dataset checks if your code is also counting occurrences of the Reverse                           
+        Complement of Pattern (which would have an output of 4), which is out of the scope of this                                   
+        problem (that will come up later in the chapter). Your code should only be looking for perfect                                 
+        matches of Pattern in Text at this point.
+    */
+    EXPECT_EQ(
+        PatternCount("GGACTTACTGACGTACG", "ACT", GetParam()),
+        2
+    );
+
+    /*
+        This dataset checks if your code correctly handles cases where occurrences of Pattern                         
+        overlap. For example, any occurrence of the string “CCC” should count as 2 occurrences of                             
+        “CC” (​CC​C and C​CC​). In this dataset, there are 5 occurrences of CC including overlaps                             
+        (AT​CC​GAT​CCC​ATG​CCC​ATG).
+    */
+    EXPECT_EQ(
+        PatternCount("ATCCGATCCCATGCCCATG", "CC", GetParam()),
+        5
+    );
+
+    // This is the final test that we run your code on: the Full Dataset.
+    EXPECT_EQ(
+        PatternCount(
+            "CTGTTTTTGATCCATGATATGTT"
+            "ATCTCTCCGTCATCAGAAGAACA"
+            "GTGACGGATCGCCCTCTCTCTTG"
+            "GTCAGGCGACCGTTTGCCATAAT"
+            "GCCCATGCTTTCCAGCCAGCTCT"
+            "CAAACTCCGGTGACTCGCGCAGG"
+            "TTGAGTA", "CTC", GetParam()),
+        9
+    );
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    TestAllPatternCount, TestPatternCount,
+    Values(AlgorithmEfficiency::Slow, AlgorithmEfficiency::Fast, AlgorithmEfficiency::Faster),
+    [](const testing::TestParamInfo<TestPatternCount::ParamType>& info) {
+        switch (info.param)
+        {
+        case AlgorithmEfficiency::Slow:
+            return "Slow";
+        case AlgorithmEfficiency::Fast:
+            return "Fast";
+        case AlgorithmEfficiency::Faster:
+            return "Faster";
+        default:
+            return "Unknown";
+        }
+    }
+);
+
 class TestFrequentWords : public TestWithParam<AlgorithmEfficiency> {
   // You can implement all the usual fixture class members here.
   // To access the test parameter, call GetParam() from class
@@ -480,7 +584,7 @@ TEST_P(TestPatternToNumber, NormalInput) {
 INSTANTIATE_TEST_SUITE_P(
     TestAllPatternToNumber, TestPatternToNumber,
     Values(AlgorithmEfficiency::Slow, AlgorithmEfficiency::Fast),
-    [](const testing::TestParamInfo<TestFrequentWords::ParamType>& info) {
+    [](const testing::TestParamInfo<TestPatternToNumber::ParamType>& info) {
         switch (info.param)
         {
         case AlgorithmEfficiency::Slow:

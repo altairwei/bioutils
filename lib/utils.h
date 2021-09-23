@@ -8,6 +8,7 @@
 BIOUTILS_BEGIN_SUB_NAMESPACE(utils)
 
 std::string characterPrintable(char c) noexcept(true);
+void printHashBit(unsigned long long hash);
 
 BIOUTILS_END_SUB_NAMESPACE(utils)
 

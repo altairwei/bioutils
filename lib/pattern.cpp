@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "exceptions.h"
+#include "utils.h"
 
 using namespace std;
 using namespace bioutils::utils;
@@ -10,6 +11,11 @@ using namespace bioutils::utils;
 BIOUTILS_BEGIN_SUB_NAMESPACE(algorithms)
 
 #define PatternLoopCount(text_length, pattern_length)  (text_length) - (pattern_length) + 1
+
+static inline bool isPatternValid(const size_t seq_len, const size_t pattern_len)
+{
+    return seq_len != 0 && pattern_len > 0 && pattern_len <= seq_len;
+}
 
 /** Brute force algorithm by hand. */
 static
@@ -63,36 +69,42 @@ PatternCount_BF(const char *text, const char *pattern)
     return count;
 }
 
-/**
- * @brief PatternCount implemented with RK algorithm.
- * 
- * @param text 
- * @param pattern The max length of pattern is 32, which can be hashed in to `long long` type.
- * @return size_t
+/*!
+    Compute the number of times a \a pattern appears in a \a text. This one is
+    implemented with RK algorithm. The max length of \a pattern is 32, which
+    can be hashed in to `long long` type.
  */
-static
-size_t
-PatternCount_RK(const char *text, const char *pattern)
+static size_t PatternCount_RK(const char *text, const char *pattern)
 {
-    unsigned int count = 0;
     size_t t_len = strlen(text);
     size_t p_len = strlen(pattern);
-    hash_t pattern_hash = PatternToNumber(pattern);
-    hash_t kmer_hash = PatternToNumber(text); /* hash value of first kmer */
 
-    hash_t mask = 0;
-    mask = ~((~mask) << (2*(p_len - 1)));
+    if (!isPatternValid(t_len, p_len))
+        return 0;
 
     // Triming non NTP characters
     for (; t_len > 1 && !is_ntp(text[t_len -1]); t_len--)
         continue;
 
+    char first_kmer[p_len + 1];
+    strncpy(first_kmer, text, p_len);
+    first_kmer[p_len] = '\0';
+
+    // Check first k-mer
+    hash_t pattern_hash = PatternToNumber(pattern);
+    hash_t kmer_hash = PatternToNumber(first_kmer);
+    unsigned int count = kmer_hash == pattern_hash;
+
+    hash_t mask = 0;
+    mask = ~((~mask) << (2*(p_len - 1)));
+
     for (int i = 1; i < PatternLoopCount(t_len, p_len); i++) {
+        // Compute hash of next k-mer
+        kmer_hash = ((kmer_hash & mask) << 2) | NucleobaseToInt(text[i+ p_len - 1]);
+
         // If hash values are matched then k-mer and pattern are matched.
         if (kmer_hash == pattern_hash)
             count++;
-        // Compute hash of next k-mer
-        kmer_hash = ((kmer_hash & mask) << 2) | NucleobaseToInt(text[i+ p_len - 1]);
     }
 
     return count;
@@ -107,28 +119,24 @@ PatternCount_RK(const char *text, const char *pattern)
  * @return size_t Number of times
  */
 size_t 
-PatternCount(const char *text, const char *pattern, enum PatternCountAlgorithms algo) noexcept(false)
+PatternCount(const char *text, const char *pattern, AlgorithmEfficiency algo) noexcept(false)
 {
     switch (algo)
     {
-    case PatternCountAlgorithms::BruteForce:
-        return PatternCount_BF(text, pattern);
-        break;
-    case PatternCountAlgorithms::BruteForceByHand:
+    case AlgorithmEfficiency::Slow:
         return PatternCount_BFH(text, pattern);
         break;
-    case PatternCountAlgorithms::RabinKarp:
+    case AlgorithmEfficiency::Fast:
+        return PatternCount_BF(text, pattern);
+        break;
+    case AlgorithmEfficiency::Faster:
+    case AlgorithmEfficiency::Fastest:
         return PatternCount_RK(text, pattern);
         break;
     default:
         throw std::runtime_error("Unknown algorithms.");
         break;
     }
-}
-
-static inline bool isPatternValid(const size_t seq_len, const size_t pattern_len)
-{
-    return seq_len != 0 && pattern_len > 0 && pattern_len <= seq_len;
 }
 
 std::vector<size_t>
