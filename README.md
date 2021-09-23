@@ -1,6 +1,6 @@
 # Bioinformatics Utilities
 
-This project is the code I wrote to solve the ROSALIND problem, but note that the code is not the solution to the problem.
+This project is the C++ library I wrote to solve the ROSALIND problems, but note that the code is not the solution to the problems.
 
 ## Progress
 ### Bioinformatics Textbook Track
