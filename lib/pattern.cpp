@@ -1,6 +1,7 @@
 #include "pattern.h"
 
 #include <cstring>
+#include <cmath>
 
 #include "exceptions.h"
 #include "utils.h"
@@ -256,21 +257,16 @@ FrequentWordsFast(const std::string &text, const int k)
     return max_freq;
 }
 
-/**
- * @brief Make a table corresponding to counting the number of occurrences of every k-mer.
- * 
- *  We would slide a length-k window Text, and if the current k-mer substring
- *  of text does not occur in the table, then we would create a new entry for
- *  it. Otherwise, we would add 1 to the entry corresponding to the current
- *  k-mer substring of Text. We call this table the frequency table for Text
- *  and k.
- * 
- * @param text Text to search
- * @param k Length of k-mer
- * @return std::map<std::string, size_t> A string-number map
+/*!
+    Make a table corresponding to counting the number of occurrences of every k-mer.
+
+    We would slide a length \a k window along \a text, and if the current k-mer
+    substring of \a text does not occur in the table, then we would create a new 
+    entry for it. Otherwise, we would add \c 1 to the entry corresponding to the
+    current k-mer substring of \a text. We call this table the frequency table 
+    for \a text and \a k.
  */
-std::map<std::string, size_t>
-FrequencyTable(const std::string &text, const int k)
+std::map<std::string, size_t> FrequencyTable(const std::string &text, const int k)
 {
     size_t t_len = text.length();
     size_t n_kmer = PatternLoopCount(t_len, k);
@@ -288,14 +284,39 @@ FrequencyTable(const std::string &text, const int k)
     return output;
 }
 
-/**
- * @brief Find the maximum value of a map
- * 
- * @param input_map Input map
- * @return size_t Maxium value of the map
+/*!
+    Generate the frequency array of a DNA string.
+
+    Given an integer \a k, we define the frequency array of a string \a text as
+    an array of length 4^k, where the i-th element of the array holds the
+    number of times that the i-th k-mer (in the lexicographic order) appears in
+    \a text .
  */
-size_t
-MaxMap(const std::map<std::string, size_t> &input_map) noexcept(false)
+std::vector<size_t> FrequencyArray(const std::string &text, const int k)
+{
+    size_t t_len = text.length();
+    size_t n_kmer = PatternLoopCount(t_len, k);
+
+    if (!isPatternValid(t_len, k))
+        return std::vector<size_t>();
+
+    // Create a vector of size 4^k with all values as zero.
+    std::vector<size_t> freq_array(pow(4, k), 0);
+ 
+    for (int i = 0; i < n_kmer; i++) {
+        // Unlike std::map::operator[], this operator never inserts a new
+        // element into the container. Accessing a nonexistent element
+        // through this operator is undefined behavior.
+        freq_array[PatternToNumber(text.substr(i, k))]++;
+    }
+
+    return freq_array;    
+}
+
+/*!
+    Find the maximum value of a \a input_map
+ */
+size_t MaxMap(const std::map<std::string, size_t> &input_map) noexcept(false)
 {
     if (input_map.empty())
         throw std::runtime_error("input map is empty.");

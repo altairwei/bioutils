@@ -1,6 +1,7 @@
 #include <string>
 #include <set>
 #include <vector>
+#include <iostream>
 
 #include "gtest/gtest.h"
 
@@ -496,6 +497,53 @@ TEST(TestFrequencyTable, NormalInput) {
             {"TAA", 1},
             {"AAT", 1}
         })
+    );
+}
+
+TEST(TestFrequencyArray, NormalInput) {
+    EXPECT_EQ(
+        FrequencyArray("ACGCGGCTCTGAAA", 2),
+        std::vector<size_t>(
+            {2, 1, 0, 0, 0, 0, 2, 2, 1, 2, 1, 0, 0, 1, 1, 0})
+    );
+
+    /*
+        This dataset checks if you have an off-­by-­one error at the end of Text
+        (i.e. you are not counting the last kmer in Text). There are three
+        instances of AA (​AA​AAC, A​AA​AC, and AA​AA​C),  but  there  is  one
+        instance  of  AC  at  the  end  (AAA​AC​).
+    */
+    EXPECT_EQ(
+        FrequencyArray("AAAAC", 2),
+        std::vector<size_t>(
+            {3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+        )
+    );
+
+    /*
+        This dataset checks if you have an off-­by-­one error at the beginning
+        of Text (i.e. you are not counting the first kmer in Text). There are
+        two instances of AA (TT​AA​A and TTA​AA​), but there  is  one  instance
+        of  TTA  (​TTA​AA)  and  one  instance  of  TAA  (T​TAA​A).
+    */
+    EXPECT_EQ(
+        FrequencyArray("TTAAA", 2),
+        std::vector<size_t>(
+            {2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1}
+        )
+    );
+
+    /*
+        This dataset checks if your code actually increments each count, or if your
+        code instead just sets the count equal to one each time. In other words,
+        this dataset checks if your code is doing  something like ​array[kmer] = 1​
+        instead  of  ​array[kmer] += 1​. 
+    */
+    EXPECT_EQ(
+        FrequencyArray("AAA", 2),
+        std::vector<size_t>(
+            {2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+        )
     );
 }
 
