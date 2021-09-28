@@ -17,7 +17,7 @@ These questions below are from *Bioinformatics Algorithms: An Active-Learning Ap
 - [ ] BA1H	Find All Approximate Occurrences of a Pattern in a String
 - [ ] BA1I	Find the Most Frequent Words with Mismatches in a String
 - [ ] BA1J	Find Frequent Words with Mismatches and Reverse Complements
-- [ ] BA1K	Generate the Frequency Array of a String
+- [x] BA1K	Generate the Frequency Array of a String
 - [x] BA1L	Implement PatternToNumber
 - [x] BA1M	Implement NumberToPattern
 - [ ] BA1N	Generate the d-Neighborhood of a String
