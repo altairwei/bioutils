@@ -18,10 +18,48 @@ static inline bool isPatternValid(const size_t seq_len, const size_t pattern_len
     return seq_len != 0 && pattern_len > 0 && pattern_len <= seq_len;
 }
 
-/** Brute force algorithm by hand. */
-static
-size_t
-PatternCount_BFH(const char *text, const char *pattern)
+/*!
+    Find all occurrences in \a text where \a pattern appears as a
+    substring and then execute \a callback on each match.
+ */
+void find_do(const char *text, const char *pattern,
+    std::function<void(const size_t, const char *, const char *)> callback)
+{
+    size_t text_len = strlen(text);
+    size_t pattern_len = strlen(pattern);
+
+    for (size_t i = 0; i < PatternLoopCount(text_len, pattern_len); i++) {
+        if (strncmp(&text[i], pattern, pattern_len) == 0) {
+            callback(i, text, pattern);
+        }
+    }
+}
+
+/*!
+    Compute the Number of Times a Pattern Appears in a Text (Brute force)
+
+    A k-mer is a string of length k. This function computes the number
+    of times that a k-mer \a pattern appears as a substring of \a text.
+
+    This version of PatternCount is kind of brute force algorithm.
+ */
+static size_t PatternCount_BF(const char *text, const char *pattern)
+{
+    unsigned int count = 0;
+
+    find_do(text, pattern,
+        [&](const size_t i, const char *, const char *) {
+            count++;
+        }
+    );
+
+    return count;
+}
+
+/*!
+    Another brute force version of PatternCount.
+ */
+static size_t PatternCount_BFH(const char *text, const char *pattern)
 {
     unsigned int count = 0;
     char const *pText;
@@ -54,26 +92,12 @@ PatternCount_BFH(const char *text, const char *pattern)
     return count;
 }
 
-/** Brute force algorithm. */
-static
-size_t
-PatternCount_BF(const char *text, const char *pattern)
-{
-    unsigned int count = 0;
-
-    find_do(text, pattern,
-        [&](const size_t i, const char *, const char *) {
-            count++;
-        }
-    );
-
-    return count;
-}
-
 /*!
+    Compute the Number of Times a Pattern Appears in a Text (Rabin-Karp)
+
     Compute the number of times a \a pattern appears in a \a text. This one is
-    implemented with RK algorithm. The max length of \a pattern is 32, which
-    can be hashed in to `long long` type.
+    implemented with Rabin-Karp algorithm. The max length of \a pattern is 32,
+    which can be hashed in to `long long` type.
  */
 static size_t PatternCount_RK(const char *text, const char *pattern)
 {
@@ -111,16 +135,10 @@ static size_t PatternCount_RK(const char *text, const char *pattern)
     return count;
 }
 
-/**
- * @brief Find the number of times that a k-mer appears as a substring of text.
- * 
- * @param text Text to find pattern.
- * @param pattern k-mer
- * @param algo 
- * @return size_t Number of times
+/*!
+    Find the number of times that a k-mer appears as a substring of text.
  */
-size_t 
-PatternCount(const char *text, const char *pattern, AlgorithmEfficiency algo) noexcept(false)
+size_t  PatternCount(const char *text, const char *pattern, AlgorithmEfficiency algo) noexcept(false)
 {
     switch (algo)
     {
@@ -140,8 +158,11 @@ PatternCount(const char *text, const char *pattern, AlgorithmEfficiency algo) no
     }
 }
 
-std::vector<size_t>
-PatternIndex(const char *text, const char *pattern)
+/*!
+    Find all starting positions in \a text where \a pattern appears as a
+    substring.
+ */
+std::vector<size_t> PatternIndex(const char *text, const char *pattern)
 {
     if (!isPatternValid(strlen(text), strlen(pattern)))
         return std::vector<size_t>();
@@ -152,19 +173,6 @@ PatternIndex(const char *text, const char *pattern)
         }
     );
     return output;
-}
-
-void find_do(const char *text, const char *pattern,
-    std::function<void(const size_t, const char *, const char *)> callback)
-{
-    size_t text_len = strlen(text);
-    size_t pattern_len = strlen(pattern);
-
-    for (size_t i = 0; i < PatternLoopCount(text_len, pattern_len); i++) {
-        if (strncmp(&text[i], pattern, pattern_len) == 0) {
-            callback(i, text, pattern);
-        }
-    }
 }
 
 /**
