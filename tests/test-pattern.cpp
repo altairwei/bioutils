@@ -253,14 +253,19 @@ TEST_P(TestFrequentWords, HandleOutOfBounds) {
 
 INSTANTIATE_TEST_SUITE_P(
     TestAllFrequentWords, TestFrequentWords,
-    Values(AlgorithmEfficiency::Slow, AlgorithmEfficiency::Fast),
+    Values(
+        AlgorithmEfficiency::Slow,
+        AlgorithmEfficiency::Fast,
+        AlgorithmEfficiency::Faster),
     [](const testing::TestParamInfo<TestFrequentWords::ParamType>& info) {
         switch (info.param)
         {
         case AlgorithmEfficiency::Slow:
-            return "Slow";
+            return "FrequentWordsSlow";
         case AlgorithmEfficiency::Fast:
-            return "Fast";
+            return "FrequentWordsBetter";
+        case AlgorithmEfficiency::Faster:
+            return "FrequentWordsFast";
         default:
             return "Unknown";
         }
@@ -727,6 +732,25 @@ TEST(TestMaxMap, NormalInput) {
 TEST(TestMaxMap, EmptyInput) {
     EXPECT_THROW(
         MaxMap(StrNumDict()),
+        std::runtime_error
+    );
+}
+
+TEST(TestMaxArray, NormalInput) {
+    EXPECT_EQ(
+        MaxArray({1, 2, 3, 4, 5}),
+        5
+    );
+
+    EXPECT_EQ(
+        MaxArray({2, 5, 6, 3, 2, 5, 12, 9, 10}),
+        12
+    );
+}
+
+TEST(TestMaxArray, EmptyInput) {
+    EXPECT_THROW(
+        MaxArray({}),
         std::runtime_error
     );
 }

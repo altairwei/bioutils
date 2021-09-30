@@ -33,10 +33,12 @@ std::vector<size_t> PatternIndex(const char *text, const char *pattern);
 
 std::set<std::string> FrequentWords(const std::string &text, const int k, AlgorithmEfficiency algo = AlgorithmEfficiency::Slow);
 std::set<std::string> FrequentWordsSlow(const std::string &text, const int k);
+std::set<std::string> FrequentWordsBetter(const std::string &text, const int k);
 std::set<std::string> FrequentWordsFast(const std::string &text, const int k);
 std::map<std::string, size_t> FrequencyTable(const std::string &text, const int k);
 std::vector<size_t> FrequencyArray(const std::string &text, const int k);
 size_t MaxMap(const std::map<std::string, size_t> &input_map);
+size_t MaxArray(const std::vector<size_t> &input_array);
 
 BIOUTILS_END_SUB_NAMESPACE(algorithms)
 

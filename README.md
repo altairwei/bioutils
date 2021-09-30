@@ -5,7 +5,7 @@ This project is the C++ library I wrote to solve the ROSALIND problems, but note
 ## Progress
 ### Bioinformatics Textbook Track
 
-These questions below are from *Bioinformatics Algorithms: An Active-Learning Approach* by Phillip Compeau & Pavel Pevzner.
+These [questions](http://rosalind.info/problems/list-view/?location=bioinformatics-textbook-track) below are from *Bioinformatics Algorithms: An Active-Learning Approach* by Phillip Compeau & Pavel Pevzner.
 
 - [x] BA1A	Compute the Number of Times a Pattern Appears in a Text
 - [x] BA1B	Find the Most Frequent Words in a String

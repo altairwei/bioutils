@@ -192,6 +192,7 @@ std::set<std::string> FrequentWords(
         return FrequentWordsSlow(text, k);
         break;
     case AlgorithmEfficiency::Fast:
+        return FrequentWordsBetter(text, k);
     case AlgorithmEfficiency::Faster:
     case AlgorithmEfficiency::Fastest:
         return FrequentWordsFast(text, k);
@@ -244,13 +245,14 @@ FrequentWordsSlow(const std::string &text, const int k)
     return output;
 }
 
-
-std::set<std::string>
-FrequentWordsFast(const std::string &text, const int k)
+/*!
+    \brief Find the Most Frequent Words in a String
+    
+    This version of FrequentWords is implemented with FrequencyTable()
+ */
+std::set<std::string> FrequentWordsFast(const std::string &text, const int k)
 {
-    size_t t_len = text.length();
-
-    if (!isPatternValid(t_len, k))
+    if (!isPatternValid(text.length(), k))
         return std::set<std::string>();
 
     auto kmer_freq_table = FrequencyTable(text, k);
@@ -260,6 +262,32 @@ FrequentWordsFast(const std::string &text, const int k)
     for (auto p : kmer_freq_table) {
         if (p.second == max)
             max_freq.insert(p.first);
+    }
+
+    return max_freq;
+}
+
+/*!
+    \brief Find the Most Frequent Words in a String
+    
+    This version of FrequentWords is implemented with FrequencyArray()
+ */
+std::set<std::string> FrequentWordsBetter(const std::string &text, const int k)
+{
+    if (!isPatternValid(text.length(), k))
+        return std::set<std::string>();
+
+    auto freq_array = FrequencyArray(text, k);
+    size_t max = MaxArray(freq_array);
+
+    std::set<std::string> max_freq;
+
+    for (int i = 0; i < freq_array.size(); i++) {
+        if (freq_array[i] == max) {
+            max_freq.insert(
+                NumberToPatternBitwise(i, k)
+            );
+        }
     }
 
     return max_freq;
@@ -334,8 +362,23 @@ size_t MaxMap(const std::map<std::string, size_t> &input_map) noexcept(false)
 
     while (p != input_map.cend()) {
         size_t cur = (*p++).second;
-        if (cur > max)
-            max = cur;
+        if (cur > max) max = cur;
+    }
+
+    return max;
+}
+
+size_t MaxArray(const std::vector<size_t> &input_array) noexcept(false)
+{
+    if (input_array.empty())
+        throw std::runtime_error("input array is empty.");
+
+    auto p = input_array.cbegin();
+    size_t max = (*p++);
+
+    while (p != input_array.cend()) {
+        size_t cur = (*p++);
+        if (cur > max) max = cur;
     }
 
     return max;
