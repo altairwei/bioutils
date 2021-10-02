@@ -256,7 +256,8 @@ INSTANTIATE_TEST_SUITE_P(
     Values(
         AlgorithmEfficiency::Slow,
         AlgorithmEfficiency::Fast,
-        AlgorithmEfficiency::Faster),
+        AlgorithmEfficiency::Faster,
+        AlgorithmEfficiency::Fastest),
     [](const testing::TestParamInfo<TestFrequentWords::ParamType>& info) {
         switch (info.param)
         {
@@ -266,6 +267,8 @@ INSTANTIATE_TEST_SUITE_P(
             return "FrequentWordsBetter";
         case AlgorithmEfficiency::Faster:
             return "FrequentWordsFast";
+        case AlgorithmEfficiency::Fastest:
+            return "FrequentWordsBySorting";
         default:
             return "Unknown";
         }

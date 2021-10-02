@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <cmath>
+#include <algorithm>
 
 #include "exceptions.h"
 #include "utils.h"
@@ -190,13 +191,12 @@ std::set<std::string> FrequentWords(
     {
     case AlgorithmEfficiency::Slow:
         return FrequentWordsSlow(text, k);
-        break;
     case AlgorithmEfficiency::Fast:
         return FrequentWordsBetter(text, k);
     case AlgorithmEfficiency::Faster:
-    case AlgorithmEfficiency::Fastest:
         return FrequentWordsFast(text, k);
-        break;
+    case AlgorithmEfficiency::Fastest:
+        return FrequentWordsBySorting(text, k);
     default:
         break;
     }
@@ -286,6 +286,51 @@ std::set<std::string> FrequentWordsBetter(const std::string &text, const int k)
         if (freq_array[i] == max) {
             max_freq.insert(
                 NumberToPatternBitwise(i, k)
+            );
+        }
+    }
+
+    return max_freq;
+}
+
+/*!
+    \brief Find the Most Frequent Words in a String
+    
+    Given a string \a text , list all its \a k -mer in the order they appear in
+    \a text, and convert each \a k -mer into an integer using \c PatternToNumber
+    to produce an array index. Then we sort index. Since identical \a k -mer
+    clump together in the sorted array, frequent \a k -mer are the longest runs
+    of identical pattern hash in sorted index.
+ */
+std::set<std::string> FrequentWordsBySorting(const std::string &text, const int k)
+{
+    if (!isPatternValid(text.length(), k))
+        return std::set<std::string>();
+
+    size_t n_kmer = PatternLoopCount(text.length(), k);
+
+    std::vector<hash_t> index(n_kmer, 0);
+    for (size_t i = 0; i < n_kmer; i++)
+        index[i] = PatternToNumber(text.substr(i, k));
+
+    // Sorted with the default operator<
+    std::sort(index.begin(), index.end());
+
+    // Frequent k-mers are the longest runs of identical pattern hash in
+    // sorted index.
+    std::vector<size_t> count(n_kmer, 1);
+    for (size_t i = 1; i < n_kmer; i++) {
+        if (index[i] == index[i-1])
+            count[i] = count[i-1] + 1;
+    }
+
+    size_t max = MaxArray(count);
+    std::set<std::string> max_freq;
+
+    for (int i = 0; i < n_kmer; i++) {
+        if (count[i] == max) {
+            max_freq.insert(
+                NumberToPatternBitwise(index[i], k)
             );
         }
     }

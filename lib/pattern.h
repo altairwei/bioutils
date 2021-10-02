@@ -35,6 +35,7 @@ std::set<std::string> FrequentWords(const std::string &text, const int k, Algori
 std::set<std::string> FrequentWordsSlow(const std::string &text, const int k);
 std::set<std::string> FrequentWordsBetter(const std::string &text, const int k);
 std::set<std::string> FrequentWordsFast(const std::string &text, const int k);
+std::set<std::string> FrequentWordsBySorting(const std::string &text, const int k);
 std::map<std::string, size_t> FrequencyTable(const std::string &text, const int k);
 std::vector<size_t> FrequencyArray(const std::string &text, const int k);
 size_t MaxMap(const std::map<std::string, size_t> &input_map);
