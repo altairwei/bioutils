@@ -9,7 +9,7 @@ class BioUtilsConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake", "cmake_paths","cmake_find_package"
     requires = (
-        "cli11/1.9.1"
+        "cli11/2.1.1"
     )
     build_requires = (
         "gtest/1.10.0"

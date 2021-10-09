@@ -309,6 +309,7 @@ std::set<std::string> FrequentWordsBySorting(const std::string &text, const int 
 
     size_t n_kmer = PatternLoopCount(text.length(), k);
 
+    // index is the pattern hash of each k-mer in text.
     std::vector<hash_t> index(n_kmer, 0);
     for (size_t i = 0; i < n_kmer; i++)
         index[i] = PatternToNumber(text.substr(i, k));
@@ -556,5 +557,34 @@ std::string NumberToPatternBitwise(const hash_t number, const int length)
     return pattern;
 }
 
+/*!
+    \brief Find patterns forming clumps in a string.
+
+    Given integers \a window_length and \a times, a string pattern of length
+    \a k forms an clump inside a (larger) string \a genome if there is an
+    interval of \a genome of length \a window_length in which pattern appears
+    at least \a times.
+
+    We defined a \a k -mer as a "clump" if it appears many times within a short
+    interval of the \a genome. We slide a window of fixed \a window_length
+    along the \a genome, looking for a region where a \a k -mer appears given
+    \a times in short succession.
+ */
+std::set<std::string> FindClumps(const std::string genome, int k, int window_length, int times)
+{
+    std::set<std::string> clumps;
+
+    // Loop each window in genome.
+    for (size_t i = 0; i < PatternLoopCount(genome.length(), window_length); i++) {
+        // Generate frequency table of each window.
+        auto freq_table = FrequencyTable(genome.substr(i, window_length), k);
+        // Find k-mers that appear a given times.
+        for (auto p : freq_table) {
+            if (p.second == times) clumps.insert(p.first);
+        }
+    }
+
+    return clumps;
+}
 
 BIOUTILS_END_SUB_NAMESPACE(algorithms)

@@ -40,6 +40,7 @@ std::map<std::string, size_t> FrequencyTable(const std::string &text, const int 
 std::vector<size_t> FrequencyArray(const std::string &text, const int k);
 size_t MaxMap(const std::map<std::string, size_t> &input_map);
 size_t MaxArray(const std::vector<size_t> &input_array);
+std::set<std::string> FindClumps(const std::string genome, int k, int window_length, int times);
 
 BIOUTILS_END_SUB_NAMESPACE(algorithms)
 
