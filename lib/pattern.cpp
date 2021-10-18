@@ -12,7 +12,7 @@ using namespace bioutils::utils;
 
 BIOUTILS_BEGIN_SUB_NAMESPACE(algorithms)
 
-#define PatternLoopCount(text_length, pattern_length)  (text_length) - (pattern_length) + 1
+#define KmerCount(text_length, pattern_length)  (text_length) - (pattern_length) + 1
 
 static inline bool isPatternValid(const size_t seq_len, const size_t pattern_len)
 {
@@ -23,14 +23,14 @@ static inline bool isPatternValid(const size_t seq_len, const size_t pattern_len
     Find all occurrences in \a text where \a pattern appears as a
     substring and then execute \a callback on each match.
  */
-void find_do(const char *text, const char *pattern,
-    std::function<void(const size_t, const char *, const char *)> callback)
+void find_do(const std::string_view text, const std::string_view pattern,
+    std::function<void(const size_t, const std::string_view, const std::string_view)> callback)
 {
-    size_t text_len = strlen(text);
-    size_t pattern_len = strlen(pattern);
+    size_t text_len = text.length();
+    size_t pattern_len = pattern.length();
 
-    for (size_t i = 0; i < PatternLoopCount(text_len, pattern_len); i++) {
-        if (strncmp(&text[i], pattern, pattern_len) == 0) {
+    for (size_t i = 0; i < KmerCount(text_len, pattern_len); i++) {
+        if (text.substr(i, pattern_len) == pattern) {
             callback(i, text, pattern);
         }
     }
@@ -44,12 +44,12 @@ void find_do(const char *text, const char *pattern,
 
     This version of PatternCount is kind of brute force algorithm.
  */
-static size_t PatternCount_BF(const char *text, const char *pattern)
+static size_t PatternCount_BF(const std::string_view text, const std::string_view pattern)
 {
     unsigned int count = 0;
 
     find_do(text, pattern,
-        [&](const size_t i, const char *, const char *) {
+        [&](const size_t i, const std::string_view, const std::string_view) {
             count++;
         }
     );
@@ -60,7 +60,8 @@ static size_t PatternCount_BF(const char *text, const char *pattern)
 /*!
     Another brute force version of PatternCount.
  */
-static size_t PatternCount_BFH(const char *text, const char *pattern)
+#if 0
+static size_t PatternCount_BFH(const std::string_view text, const std::string_view pattern)
 {
     unsigned int count = 0;
     char const *pText;
@@ -92,6 +93,7 @@ static size_t PatternCount_BFH(const char *text, const char *pattern)
 
     return count;
 }
+#endif
 
 /*!
     Compute the Number of Times a Pattern Appears in a Text (Rabin-Karp)
@@ -100,10 +102,10 @@ static size_t PatternCount_BFH(const char *text, const char *pattern)
     implemented with Rabin-Karp algorithm. The max length of \a pattern is 32,
     which can be hashed in to `long long` type.
  */
-static size_t PatternCount_RK(const char *text, const char *pattern)
+static size_t PatternCount_RK(const std::string_view text, const std::string_view pattern)
 {
-    size_t t_len = strlen(text);
-    size_t p_len = strlen(pattern);
+    size_t t_len = text.length();
+    size_t p_len = pattern.length();
 
     if (!isPatternValid(t_len, p_len))
         return 0;
@@ -112,9 +114,7 @@ static size_t PatternCount_RK(const char *text, const char *pattern)
     for (; t_len > 1 && !is_ntp(text[t_len -1]); t_len--)
         continue;
 
-    char first_kmer[p_len + 1];
-    strncpy(first_kmer, text, p_len);
-    first_kmer[p_len] = '\0';
+    auto first_kmer = text.substr(0, p_len);
 
     // Check first k-mer
     hash_t pattern_hash = PatternToNumber(pattern);
@@ -124,7 +124,7 @@ static size_t PatternCount_RK(const char *text, const char *pattern)
     hash_t mask = 0;
     mask = ~((~mask) << (2*(p_len - 1)));
 
-    for (int i = 1; i < PatternLoopCount(t_len, p_len); i++) {
+    for (int i = 1; i < KmerCount(t_len, p_len); i++) {
         // Compute hash of next k-mer
         kmer_hash = ((kmer_hash & mask) << 2) | NucleobaseToInt(text[i+ p_len - 1]);
 
@@ -139,13 +139,11 @@ static size_t PatternCount_RK(const char *text, const char *pattern)
 /*!
     Find the number of times that a k-mer appears as a substring of text.
  */
-size_t  PatternCount(const char *text, const char *pattern, AlgorithmEfficiency algo) noexcept(false)
+size_t  PatternCount(const std::string_view text, const std::string_view pattern, AlgorithmEfficiency algo) noexcept(false)
 {
     switch (algo)
     {
     case AlgorithmEfficiency::Slow:
-        return PatternCount_BFH(text, pattern);
-        break;
     case AlgorithmEfficiency::Fast:
         return PatternCount_BF(text, pattern);
         break;
@@ -163,13 +161,13 @@ size_t  PatternCount(const char *text, const char *pattern, AlgorithmEfficiency 
     Find all starting positions in \a text where \a pattern appears as a
     substring.
  */
-std::vector<size_t> PatternIndex(const char *text, const char *pattern)
+std::vector<size_t> PatternIndex(const std::string_view text, const std::string_view pattern)
 {
-    if (!isPatternValid(strlen(text), strlen(pattern)))
+    if (!isPatternValid(text.length(), pattern.length()))
         return std::vector<size_t>();
     std::vector<size_t> output;
     find_do(text, pattern,
-        [&](const size_t i, const char *, const char *){
+        [&](const size_t i, const std::string_view, const std::string_view){
             output.push_back(i);
         }
     );
@@ -185,7 +183,7 @@ std::vector<size_t> PatternIndex(const char *text, const char *pattern)
  * @return std::set<std::string> All most frequent k-mers in text.
  */
 std::set<std::string> FrequentWords(
-    const std::string &text, const int k, AlgorithmEfficiency algo /*= Slow*/)
+    const std::string_view text, const int k, AlgorithmEfficiency algo /*= Slow*/)
 {
     switch (algo)
     {
@@ -205,7 +203,7 @@ std::set<std::string> FrequentWords(
 }
 
 std::set<std::string>
-FrequentWordsSlow(const std::string &text, const int k)
+FrequentWordsSlow(const std::string_view text, const int k)
 {
     size_t t_len = text.length();
 
@@ -213,7 +211,7 @@ FrequentWordsSlow(const std::string &text, const int k)
         return std::set<std::string>();
 
     // Total count of k-mer
-    size_t n_kmer = PatternLoopCount(t_len, k);
+    size_t n_kmer = KmerCount(t_len, k);
 
     // Array to store counts for each k-mer.
     vector<int> kmer_count(n_kmer);
@@ -226,7 +224,7 @@ FrequentWordsSlow(const std::string &text, const int k)
     // Calculate counts of each k-mer
     for (int i = 0; i < n_kmer; i++) {
         cur_kmer = text.substr(i, k);
-        int c = PatternCount_BF(text.c_str(), cur_kmer.c_str());
+        int c = PatternCount_BF(text, cur_kmer);
         kmer_count[i] = c;
         if (c > max_count)
             max_count = c;
@@ -236,9 +234,9 @@ FrequentWordsSlow(const std::string &text, const int k)
     std::set<std::string> output;
     for (int i = 0; i < n_kmer; i++) {
         if (kmer_count[i] == max_count) {
-            string par = text.substr(i, k);
+            std::string_view par = text.substr(i, k);
             // Set will remove duplicates automaticlly.
-            output.insert(par);
+            output.insert(std::string(par));
         }
     }
 
@@ -250,7 +248,7 @@ FrequentWordsSlow(const std::string &text, const int k)
     
     This version of FrequentWords is implemented with FrequencyTable()
  */
-std::set<std::string> FrequentWordsFast(const std::string &text, const int k)
+std::set<std::string> FrequentWordsFast(const std::string_view text, const int k)
 {
     if (!isPatternValid(text.length(), k))
         return std::set<std::string>();
@@ -272,7 +270,7 @@ std::set<std::string> FrequentWordsFast(const std::string &text, const int k)
     
     This version of FrequentWords is implemented with FrequencyArray()
  */
-std::set<std::string> FrequentWordsBetter(const std::string &text, const int k)
+std::set<std::string> FrequentWordsBetter(const std::string_view text, const int k)
 {
     if (!isPatternValid(text.length(), k))
         return std::set<std::string>();
@@ -302,12 +300,12 @@ std::set<std::string> FrequentWordsBetter(const std::string &text, const int k)
     clump together in the sorted array, frequent \a k -mer are the longest runs
     of identical pattern hash in sorted index.
  */
-std::set<std::string> FrequentWordsBySorting(const std::string &text, const int k)
+std::set<std::string> FrequentWordsBySorting(const std::string_view text, const int k)
 {
     if (!isPatternValid(text.length(), k))
         return std::set<std::string>();
 
-    size_t n_kmer = PatternLoopCount(text.length(), k);
+    size_t n_kmer = KmerCount(text.length(), k);
 
     // index is the pattern hash of each k-mer in text.
     std::vector<hash_t> index(n_kmer, 0);
@@ -348,10 +346,10 @@ std::set<std::string> FrequentWordsBySorting(const std::string &text, const int 
     current k-mer substring of \a text. We call this table the frequency table 
     for \a text and \a k.
  */
-std::map<std::string, size_t> FrequencyTable(const std::string &text, const int k)
+std::map<std::string, size_t> FrequencyTable(const std::string_view text, const int k)
 {
     size_t t_len = text.length();
-    size_t n_kmer = PatternLoopCount(t_len, k);
+    size_t n_kmer = KmerCount(t_len, k);
 
     if (!isPatternValid(t_len, k))
         return std::map<std::string, size_t>();
@@ -360,7 +358,7 @@ std::map<std::string, size_t> FrequencyTable(const std::string &text, const int 
     for (int i = 0; i < n_kmer; i++) {
         // Performing an insertion if such key does not already exist and
         // the mapped value is value-initialized (in this case, it's zero).
-        output[text.substr(i, k)]++;
+        output[std::string(text.substr(i, k))]++;
     }
 
     return output;
@@ -372,12 +370,12 @@ std::map<std::string, size_t> FrequencyTable(const std::string &text, const int 
     Given an integer \a k, we define the frequency array of a string \a text as
     an array of length 4^k, where the i-th element of the array holds the
     number of times that the i-th k-mer (in the lexicographic order) appears in
-    \a text .
+    \a text . Therefore, the index of frequency array is hash value of a k-mer.
  */
-std::vector<size_t> FrequencyArray(const std::string &text, const int k)
+std::vector<size_t> FrequencyArray(const std::string_view text, const int k)
 {
     size_t t_len = text.length();
-    size_t n_kmer = PatternLoopCount(t_len, k);
+    size_t n_kmer = KmerCount(t_len, k);
 
     if (!isPatternValid(t_len, k))
         return std::vector<size_t>();
@@ -499,7 +497,7 @@ inline char IntToNucleobase(const int i)
     return base;
 }
 
-hash_t PatternToNumber(const std::string &pattern, AlgorithmEfficiency algo)
+hash_t PatternToNumber(const std::string_view pattern, AlgorithmEfficiency algo)
 {
     switch (algo)
     {
@@ -518,7 +516,7 @@ hash_t PatternToNumber(const std::string &pattern, AlgorithmEfficiency algo)
     return 0;
 }
 
-hash_t PatternToNumberBitwise(const std::string &pattern)
+hash_t PatternToNumberBitwise(const std::string_view pattern)
 {
     hash_t hash = 0;
     size_t len = pattern.length();
@@ -532,13 +530,13 @@ hash_t PatternToNumberBitwise(const std::string &pattern)
     return hash;
 }
 
-hash_t PatternToNumberRecursive(const std::string &pattern)
+hash_t PatternToNumberRecursive(const std::string_view pattern)
 {
     if (pattern.empty())
         return 0;
 
     char base = pattern.back();
-    std::string prefix = pattern.substr(0, pattern.length() - 1);
+    std::string_view prefix = pattern.substr(0, pattern.length() - 1);
 
     return 4 * PatternToNumberRecursive(prefix) + NucleobaseToInt(base);
 }
@@ -557,6 +555,123 @@ std::string NumberToPatternBitwise(const hash_t number, const int length)
     return pattern;
 }
 
+std::set<std::string> FindClumpsRaw(const std::string_view genome, int k, int window_length, int times)
+{
+    std::set<std::string> clumps;
+
+    // Create a vector of size 4^k with all values as zero.
+    std::vector<size_t> freq_array(pow(4, k), 0);
+ 
+    // This is used to mark which pattern formed a clump. The pos of this
+    // vector is hash value of a k-mer.
+    std::vector<bool> is_clump(pow(4, k), false);
+    for (size_t i = 0; i < KmerCount(genome.length(), window_length); i++) {
+        // Re-initialise to zero.
+        std::fill(freq_array.begin(), freq_array.end(), 0);
+
+        auto genome_window = genome.substr(i, window_length);
+        for (int i = 0; i < KmerCount(genome_window.length(), k); i++) {
+            freq_array[PatternToNumber(genome_window.substr(i, k))]++;
+        }
+
+        for (size_t i = 0; i < freq_array.size(); i++) {
+            if (freq_array[i] >= times)
+                is_clump[i] = true;
+        }
+    }
+
+    // Remove duplication
+    for (size_t i = 0; i < is_clump.size(); i++) {
+        if (is_clump[i])
+            clumps.insert(NumberToPatternBitwise(i, k));
+    }
+
+    return clumps;
+}
+
+/*!
+    We use FrequencyTable to implement FindClumps. It's faster than FrequencyArray.
+ */
+std::set<std::string> FindClumpsRaw2(const std::string_view genome, int k, int window_length, int times)
+{
+    std::set<std::string> clumps;
+
+    // Loop each window in genome.
+    for (size_t i = 0; i < KmerCount(genome.length(), window_length); i++) {
+        // Generate frequency table of each window.
+        auto freq_table = FrequencyTable(genome.substr(i, window_length), k);
+        // Find k-mers that appear a given times at least.
+        for (auto p : freq_table) {
+            if (p.second >= times) clumps.insert(p.first);
+        }
+    }
+
+    return clumps;
+}
+
+std::set<std::string> FindClumpsBetter(const std::string_view genome, int k, int window_length, int times)
+{
+    std::set<std::string> clumps;
+    // This is used to mark which pattern formed a clump. The pos of this
+    // vector is hash value of a k-mer.
+    std::vector<bool> is_clump(pow(4, k), false);
+
+    // Handle First window
+    auto freq_array = FrequencyArray(genome.substr(0, window_length), k);
+    for (size_t i = 0; i < freq_array.size(); i++) {
+        if (freq_array[i] >= times)
+            is_clump[i] = true;
+    }
+
+    // Update following window
+    for (size_t i = 1; i < KmerCount(genome.length(), window_length); i++) {
+        // Prior k-mer have been passed so we reduce it's frequency. Because
+        // it's frequency is lower than last window, there is no need to check
+        // it's number of occurrence.
+        auto prior_kmer_hash = PatternToNumber(genome.substr(i-1, k));
+        --freq_array[prior_kmer_hash];
+
+        // Next k-mer is new so we increase it's frequncy, and check for it's
+        // number of occurrence.
+        auto next_kmer_hash = PatternToNumber(genome.substr(i + (window_length - k), k));
+        if (++freq_array[next_kmer_hash] >= times && !is_clump[next_kmer_hash])
+            is_clump[next_kmer_hash] = true;
+    }
+
+    for (size_t i = 0; i < is_clump.size(); i++) {
+        if (is_clump[i])
+            clumps.insert(NumberToPatternBitwise(i, k));
+    }
+
+    return clumps;
+}
+
+std::set<std::string> FindClumpsBetter2(const std::string_view genome, int k, int window_length, int times)
+{
+    std::set<std::string> clumps;
+    std::map<std::string, bool> is_clump;
+
+    // Handle First window
+    auto freq_table = FrequencyTable(genome.substr(0, window_length), k);
+    for (auto p : freq_table)
+        is_clump[p.first] = p.second >= times ? true : false;
+
+    // Update following window
+    for (size_t i = 1; i < KmerCount(genome.length(), window_length); i++) {
+        auto prior_kmer = std::string(genome.substr(i-1, k));
+        --freq_table[std::string(prior_kmer)];
+
+        auto next_kmer = std::string(genome.substr(i + (window_length - k), k));
+        if (++freq_table[next_kmer] >= times && !is_clump[next_kmer])
+            is_clump[next_kmer] = true;
+    }
+
+    for (auto p : is_clump)
+        if (p.second) clumps.insert(p.first);
+
+    return clumps;
+}
+
 /*!
     \brief Find patterns forming clumps in a string.
 
@@ -570,21 +685,21 @@ std::string NumberToPatternBitwise(const hash_t number, const int length)
     along the \a genome, looking for a region where a \a k -mer appears given
     \a times in short succession.
  */
-std::set<std::string> FindClumps(const std::string genome, int k, int window_length, int times)
+std::set<std::string> FindClumps(const std::string_view genome, int k, int window_length, int times, AlgorithmEfficiency algo)
 {
-    std::set<std::string> clumps;
-
-    // Loop each window in genome.
-    for (size_t i = 0; i < PatternLoopCount(genome.length(), window_length); i++) {
-        // Generate frequency table of each window.
-        auto freq_table = FrequencyTable(genome.substr(i, window_length), k);
-        // Find k-mers that appear a given times.
-        for (auto p : freq_table) {
-            if (p.second == times) clumps.insert(p.first);
-        }
+    switch (algo)
+    {
+    case AlgorithmEfficiency::Slow:
+        return FindClumpsRaw(genome, k, window_length, times);
+    case AlgorithmEfficiency::Fast:
+        return FindClumpsRaw2(genome, k, window_length, times);
+    case AlgorithmEfficiency::Faster:
+        return FindClumpsBetter(genome, k, window_length, times);
+    case AlgorithmEfficiency::Fastest:
+        return FindClumpsBetter2(genome, k, window_length, times);
+    default:
+        break;
     }
-
-    return clumps;
 }
 
 BIOUTILS_END_SUB_NAMESPACE(algorithms)

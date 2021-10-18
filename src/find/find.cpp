@@ -125,7 +125,8 @@ main( int argc, char *argv[], char *envp[] )
         seq.erase(std::remove(seq.begin(), seq.end(), '\n'), seq.end());
         seq.erase(std::remove(seq.begin(), seq.end(), '\r'), seq.end());
 
-        auto clumps = algorithms::FindClumps(seq, k, window_length, times);
+        auto clumps = algorithms::FindClumps(
+            seq, k, window_length, times, algorithms::AlgorithmEfficiency::Fastest);
         for (auto clp : clumps)
             std::cout << clp << " ";
         std::cout << std::endl;

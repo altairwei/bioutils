@@ -758,12 +758,14 @@ TEST(TestMaxArray, EmptyInput) {
     );
 }
 
-TEST(TestFindClumps, NormalInput) {
+class TestFindClumps: public TestWithParam<AlgorithmEfficiency> {};
+
+TEST_P(TestFindClumps, NormalInput) {
     EXPECT_EQ(
         FindClumps(
             "CGGACTCGACAGATGTGAAGAAATGTGAAGACTGAGTGAA"
             "GAGAAGAGGAAACACGACACGACATTGCGACATAATGTAC"
-            "GAATGTAATGTGCCTATGGC", 5, 75, 4),
+            "GAATGTAATGTGCCTATGGC", 5, 75, 4, GetParam()),
         std::set<std::string>({"CGACA", "GAAGA", "AATGT"})
     );
 
@@ -865,7 +867,7 @@ TEST(TestFindClumps, NormalInput) {
             "CCCCGTAACCCGGTGCGCACGCGCCCGGCGCACGCGGAGC"
             "GCACGCGCCCCCCCCGGTAATAGCGCACGCGCCCGGGCGC"
             "ACGCGCCCGGTAACCCGGTAACCCGGGCGCGCGCACGCGG"
-            "CGGCGCACGCGGCGCACGCGGCGCACGCG", 11, 566, 18),
+            "CGGCGCACGCGGCGCACGCGGCGCACGCG", 11, 566, 18, GetParam()),
         std::set<std::string>({"AAACCAGGTGG"})
     );
 
@@ -878,7 +880,7 @@ TEST(TestFindClumps, NormalInput) {
         Thus,  the  only  result  is  “AA”.   
     */
     EXPECT_EQ(
-        FindClumps("AAAACGTCGAAAAA", 2, 4, 2),
+        FindClumps("AAAACGTCGAAAAA", 2, 4, 2, GetParam()),
         std::set<std::string>({"AA"})
     );
 
@@ -889,7 +891,7 @@ TEST(TestFindClumps, NormalInput) {
         once at the beginning of the 5-­window, and once at the end​.
     */
     EXPECT_EQ(
-        FindClumps("ACGTACGT", 1, 5, 2),
+        FindClumps("ACGTACGT", 1, 5, 2, GetParam()),
         std::set<std::string>({"A", "C", "G", "T"})
     );
 
@@ -903,9 +905,33 @@ TEST(TestFindClumps, NormalInput) {
             "AATGGCTGCCGCCAGGTTATCCAGACCTACAGGTCCACCA"
             "AAGAACTTATCGATTACCGCCAGCAACAATTTGCGGTCCA"
             "TATAATCGAAACCTTCAGCATCGACATTCAACATATCCAG"
-            "CG", 3, 25, 3),
+            "CG", 3, 25, 3, GetParam()),
         std::set<std::string>({"AAA", "CAG", "CAT", "CCA", "GCC", "TTC"})
     );
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    TestAllFindClumps, TestFindClumps,
+    Values(
+        AlgorithmEfficiency::Slow,
+        AlgorithmEfficiency::Fast,
+        AlgorithmEfficiency::Faster,
+        AlgorithmEfficiency::Fastest),
+    [](const testing::TestParamInfo<TestFindClumps::ParamType>& info) {
+        switch (info.param)
+        {
+        case AlgorithmEfficiency::Slow:
+            return "FindClumpsRaw";
+        case AlgorithmEfficiency::Fast:
+            return "FindClumpsRaw2";
+        case AlgorithmEfficiency::Faster:
+            return "FindClumpsBetter";
+        case AlgorithmEfficiency::Fastest:
+            return "FindClumpsBetter2";
+        default:
+            return "Unknown";
+        }
+    }
+);
 
 } // namespace
