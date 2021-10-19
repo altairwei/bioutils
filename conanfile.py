@@ -12,7 +12,8 @@ class BioUtilsConan(ConanFile):
         "cli11/2.1.1"
     )
     build_requires = (
-        "gtest/1.10.0"
+        "gtest/1.10.0",
+        "benchmark/1.6.0"
     )
     
     def build(self):

@@ -1,5 +1,7 @@
 include(GoogleTest)
+
 find_package(GTest REQUIRED)
+find_package(benchmark REQUIRED)
 
 macro(package_add_test TESTNAME)
     # create an exectuable in which the tests will be stored
@@ -17,13 +19,23 @@ macro(package_add_test TESTNAME)
     set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
 endmacro()
 
+macro(package_add_bench TESTNAME)
+    set(TARGET_NAME ${TESTNAME})
+    add_executable(${TARGET_NAME} ${ARGN})
+    set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME ${TESTNAME})
+    set_target_properties(${TARGET_NAME} PROPERTIES FOLDER tests)
+    target_link_libraries(${TARGET_NAME} bioutils ${benchmark_LIBRARIES})
+    #add_test(NAME ${TARGET_NAME} COMMAND ${TARGET_NAME})
+endmacro()
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/lib
     ${GTest_INCLUDE_DIRS}
+    ${benchmark_INCLUDE_DIRS}
 )
 
-package_add_test(TestFind test-pattern.cpp)
-
+package_add_test(TestPattern test-pattern.cpp)
+package_add_bench(BenchPattern bench-pattern.cpp)
 
