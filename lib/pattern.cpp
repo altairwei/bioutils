@@ -3,6 +3,7 @@
 #include <cstring>
 #include <cmath>
 #include <algorithm>
+#include <limits>
 
 #include "exceptions.h"
 #include "utils.h"
@@ -346,15 +347,15 @@ std::set<std::string> FrequentWordsBySorting(const std::string_view text, const 
     current k-mer substring of \a text. We call this table the frequency table 
     for \a text and \a k.
  */
-std::map<std::string, size_t> FrequencyTable(const std::string_view text, const int k)
+std::unordered_map<std::string, uint> FrequencyTable(const std::string_view text, const int k)
 {
     size_t t_len = text.length();
     size_t n_kmer = KmerCount(t_len, k);
 
     if (!isPatternValid(t_len, k))
-        return std::map<std::string, size_t>();
+        return std::unordered_map<std::string, uint>();
 
-    std::map<std::string, size_t> output;
+    std::unordered_map<std::string, uint> output;
     for (int i = 0; i < n_kmer; i++) {
         // Performing an insertion if such key does not already exist and
         // the mapped value is value-initialized (in this case, it's zero).
@@ -372,16 +373,16 @@ std::map<std::string, size_t> FrequencyTable(const std::string_view text, const 
     number of times that the i-th k-mer (in the lexicographic order) appears in
     \a text . Therefore, the index of frequency array is hash value of a k-mer.
  */
-std::vector<size_t> FrequencyArray(const std::string_view text, const int k)
+std::vector<uint> FrequencyArray(const std::string_view text, const int k)
 {
     size_t t_len = text.length();
     size_t n_kmer = KmerCount(t_len, k);
 
     if (!isPatternValid(t_len, k))
-        return std::vector<size_t>();
+        return std::vector<uint>();
 
     // Create a vector of size 4^k with all values as zero.
-    std::vector<size_t> freq_array(pow(4, k), 0);
+    std::vector<uint> freq_array(pow(4, k), 0);
  
     for (int i = 0; i < n_kmer; i++) {
         // Unlike std::map::operator[], this operator never inserts a new
@@ -392,42 +393,6 @@ std::vector<size_t> FrequencyArray(const std::string_view text, const int k)
 
     return freq_array;    
 }
-
-/*!
-    Find the maximum value of a \a input_map
- */
-size_t MaxMap(const std::map<std::string, size_t> &input_map) noexcept(false)
-{
-    if (input_map.empty())
-        throw std::runtime_error("input map is empty.");
-
-    auto p = input_map.cbegin();
-    size_t max = (*p++).second;
-
-    while (p != input_map.cend()) {
-        size_t cur = (*p++).second;
-        if (cur > max) max = cur;
-    }
-
-    return max;
-}
-
-size_t MaxArray(const std::vector<size_t> &input_array) noexcept(false)
-{
-    if (input_array.empty())
-        throw std::runtime_error("input array is empty.");
-
-    auto p = input_array.cbegin();
-    size_t max = (*p++);
-
-    while (p != input_array.cend()) {
-        size_t cur = (*p++);
-        if (cur > max) max = cur;
-    }
-
-    return max;
-}
-
 
 inline bool
 is_ntp(char c)
@@ -497,8 +462,13 @@ inline char IntToNucleobase(const int i)
     return base;
 }
 
+const int MAX_HASHABLE_LENGTH = std::numeric_limits<hash_t>::digits / 2;
 hash_t PatternToNumber(const std::string_view pattern, AlgorithmEfficiency algo)
 {
+    if (pattern.length() > MAX_HASHABLE_LENGTH)
+        throw std::runtime_error(
+            "The length of the pattern exceeds the maximum hashable length.");
+
     switch (algo)
     {
     case AlgorithmEfficiency::Slow:
@@ -609,6 +579,10 @@ std::set<std::string> FindClumpsRaw2(const std::string_view genome, int k, int w
     return clumps;
 }
 
+/*!
+    The max \a k is 32, which can be hashed in to \c hash_t type. The
+    argument \a k is also limited by the available memory.
+ */
 std::set<std::string> FindClumpsBetter(const std::string_view genome, int k, int window_length, int times)
 {
     std::set<std::string> clumps;
@@ -646,10 +620,14 @@ std::set<std::string> FindClumpsBetter(const std::string_view genome, int k, int
     return clumps;
 }
 
-std::set<std::string> FindClumpsBetter2(const std::string_view genome, int k, int window_length, int times)
+/*!
+    By benchmark testing, this function is not as efficient on large data sets
+    as FindClumpsBetter
+ */
+std::set<std::string> FindClumpsBetterWithHashTable(const std::string_view genome, int k, int window_length, int times)
 {
     std::set<std::string> clumps;
-    std::map<std::string, bool> is_clump;
+    std::unordered_map<std::string, bool> is_clump;
 
     // Handle First window
     auto freq_table = FrequencyTable(genome.substr(0, window_length), k);
@@ -658,8 +636,10 @@ std::set<std::string> FindClumpsBetter2(const std::string_view genome, int k, in
 
     // Update following window
     for (size_t i = 1; i < KmerCount(genome.length(), window_length); i++) {
+        // FIXME in C++20: Heterogeneous lookup for unordered containers (transparent hashing)
+        // see http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0919r2.html
         auto prior_kmer = std::string(genome.substr(i-1, k));
-        --freq_table[std::string(prior_kmer)];
+        --freq_table[prior_kmer];
 
         auto next_kmer = std::string(genome.substr(i + (window_length - k), k));
         if (++freq_table[next_kmer] >= times && !is_clump[next_kmer])
@@ -696,9 +676,14 @@ std::set<std::string> FindClumps(const std::string_view genome, int k, int windo
     case AlgorithmEfficiency::Faster:
         return FindClumpsBetter(genome, k, window_length, times);
     case AlgorithmEfficiency::Fastest:
-        return FindClumpsBetter2(genome, k, window_length, times);
+        return FindClumpsBetterWithHashTable(genome, k, window_length, times);
     default:
-        break;
+    {
+        if (k > MAX_HASHABLE_LENGTH)
+            return FindClumpsBetterWithHashTable(genome, k, window_length, times);
+        else
+            return FindClumpsBetter(genome, k, window_length, times);
+    }
     }
 }
 

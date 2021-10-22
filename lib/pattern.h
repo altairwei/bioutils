@@ -16,9 +16,10 @@ BIOUTILS_BEGIN_SUB_NAMESPACE(algorithms)
         || (C) == 'a' || (C) == 't' || (C) == 'c' || (C) == 'g')
 
 typedef unsigned long long hash_t;
+extern const int MAX_HASHABLE_LENGTH;
 
 enum class PatternCountAlgorithms { BruteForce, BruteForceByHand, RabinKarp };
-enum class AlgorithmEfficiency {Slow, Fast, Faster, Fastest};
+enum class AlgorithmEfficiency {Default, Slow, Fast, Faster, Fastest};
 
 hash_t PatternToNumber(const std::string_view pattern, AlgorithmEfficiency algo = AlgorithmEfficiency::Slow);
 hash_t PatternToNumberBitwise(const std::string_view pattern);
@@ -37,11 +38,10 @@ std::set<std::string> FrequentWordsSlow(const std::string_view text, const int k
 std::set<std::string> FrequentWordsBetter(const std::string_view text, const int k);
 std::set<std::string> FrequentWordsFast(const std::string_view text, const int k);
 std::set<std::string> FrequentWordsBySorting(const std::string_view text, const int k);
-std::map<std::string, size_t> FrequencyTable(const std::string_view text, const int k);
-std::vector<size_t> FrequencyArray(const std::string_view text, const int k);
-size_t MaxMap(const std::map<std::string, size_t> &input_map);
-size_t MaxArray(const std::vector<size_t> &input_array);
-std::set<std::string> FindClumps(const std::string_view genome, int k, int window_length, int times, AlgorithmEfficiency algo = AlgorithmEfficiency::Slow);
+std::unordered_map<std::string, uint> FrequencyTable(const std::string_view text, const int k);
+std::vector<uint> FrequencyArray(const std::string_view text, const int k);
+
+std::set<std::string> FindClumps(const std::string_view genome, int k, int window_length, int times, AlgorithmEfficiency algo = AlgorithmEfficiency::Default);
 
 BIOUTILS_END_SUB_NAMESPACE(algorithms)
 

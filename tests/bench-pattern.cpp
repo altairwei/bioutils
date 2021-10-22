@@ -39,5 +39,5 @@ void BenchFindClumps(benchmark::State& state, ExtraArgs&&... extra_args) {
 
 //BENCHMARK_CAPTURE(BenchFindClumps, Slow, 10, 500, 20, AlgorithmEfficiency::Slow)->RangeMultiplier(2)->Range(1024, 1024<<4);
 //BENCHMARK_CAPTURE(BenchFindClumps, Fast, AlgorithmEfficiency::Fast)->RangeMultiplier(2)->Range(1024, 1024<<10);
-BENCHMARK_CAPTURE(BenchFindClumps, Faster, AlgorithmEfficiency::Faster)->RangeMultiplier(2)->Range(1024, 1024<<10);
-BENCHMARK_CAPTURE(BenchFindClumps, Fastest, AlgorithmEfficiency::Fastest)->RangeMultiplier(2)->Range(1024, 1024<<10);
+BENCHMARK_CAPTURE(BenchFindClumps, Faster, AlgorithmEfficiency::Faster)->RangeMultiplier(2)->Range(1024, 1024<<12);
+BENCHMARK_CAPTURE(BenchFindClumps, Fastest, AlgorithmEfficiency::Fastest)->RangeMultiplier(2)->Range(1024, 1024<<12);
