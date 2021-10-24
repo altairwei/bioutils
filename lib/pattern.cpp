@@ -4,6 +4,7 @@
 #include <cmath>
 #include <algorithm>
 #include <limits>
+#include <array>
 
 #include "exceptions.h"
 #include "utils.h"
@@ -13,11 +14,78 @@ using namespace bioutils::utils;
 
 BIOUTILS_BEGIN_SUB_NAMESPACE(algorithms)
 
-#define KmerCount(text_length, pattern_length)  (text_length) - (pattern_length) + 1
+#define SubstrCount(text_length, pattern_length)  (text_length) - (pattern_length) + 1
 
 static inline bool isPatternValid(const size_t seq_len, const size_t pattern_len)
 {
     return seq_len != 0 && pattern_len > 0 && pattern_len <= seq_len;
+}
+
+static const char INT_TO_BASE[4] = {'A', 'C', 'G', 'T'};
+
+static const int BASE_TO_INT[256] = {
+    REPEAT_LIST_N(0, 60), REPEAT_LIST_N(0, 5),
+//  A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
+    0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0,
+    REPEAT_LIST_N(0, 6),
+//  a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
+    0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0,
+    REPEAT_LIST_N(0, 100), REPEAT_LIST_N(0, 30), REPEAT_LIST_N(0, 3)
+};
+
+/*!
+    \brief Convert DNA base to number
+    
+    \param base DNA base
+    \return int Integer of DNA base
+ */
+static inline int NucleobaseToInt(const char base)
+{
+    int val;
+    switch (toupper(base))
+    {
+        case 'A':
+            val = 0;
+            break;
+        case 'C':
+            val = 1;
+            break;
+        case 'G':
+            val = 2;
+            break;
+        case 'T':
+            val = 3;
+            break;
+        default:
+            throw UnknownNucleotideError(base);
+    }
+
+    return val;
+}
+
+static inline char IntToNucleobase(const int i)
+{
+    char base;
+    switch (i)
+    {
+        case 0:
+            base = 'A';
+            break;
+        case 1:
+            base = 'C';
+            break;
+        case 2:
+            base = 'G';
+            break;
+        case 3:
+            base = 'T';
+            break;
+        default:
+            throw std::runtime_error("Only integer 0~3 can be converted to nucleobase symbol");
+            break;
+    }
+
+    return base;
 }
 
 /*!
@@ -30,7 +98,7 @@ void find_do(const std::string_view text, const std::string_view pattern,
     size_t text_len = text.length();
     size_t pattern_len = pattern.length();
 
-    for (size_t i = 0; i < KmerCount(text_len, pattern_len); i++) {
+    for (size_t i = 0; i < SubstrCount(text_len, pattern_len); i++) {
         if (text.substr(i, pattern_len) == pattern) {
             callback(i, text, pattern);
         }
@@ -111,10 +179,6 @@ static size_t PatternCount_RK(const std::string_view text, const std::string_vie
     if (!isPatternValid(t_len, p_len))
         return 0;
 
-    // Triming non NTP characters
-    for (; t_len > 1 && !is_ntp(text[t_len -1]); t_len--)
-        continue;
-
     auto first_kmer = text.substr(0, p_len);
 
     // Check first k-mer
@@ -125,10 +189,12 @@ static size_t PatternCount_RK(const std::string_view text, const std::string_vie
     hash_t mask = 0;
     mask = ~((~mask) << (2*(p_len - 1)));
 
-    for (int i = 1; i < KmerCount(t_len, p_len); i++) {
+    char base;
+    for (int i = 1; i < SubstrCount(t_len, p_len); i++) {
+        base = text[i+ p_len - 1];
+        if (!ISNTP(base)) throw UnknownNucleotideError(base);
         // Compute hash of next k-mer
-        kmer_hash = ((kmer_hash & mask) << 2) | NucleobaseToInt(text[i+ p_len - 1]);
-
+        kmer_hash = ((kmer_hash & mask) << 2) | BASE_TO_INT[base];
         // If hash values are matched then k-mer and pattern are matched.
         if (kmer_hash == pattern_hash)
             count++;
@@ -212,7 +278,7 @@ FrequentWordsSlow(const std::string_view text, const int k)
         return std::set<std::string>();
 
     // Total count of k-mer
-    size_t n_kmer = KmerCount(t_len, k);
+    size_t n_kmer = SubstrCount(t_len, k);
 
     // Array to store counts for each k-mer.
     vector<int> kmer_count(n_kmer);
@@ -306,7 +372,7 @@ std::set<std::string> FrequentWordsBySorting(const std::string_view text, const 
     if (!isPatternValid(text.length(), k))
         return std::set<std::string>();
 
-    size_t n_kmer = KmerCount(text.length(), k);
+    size_t n_kmer = SubstrCount(text.length(), k);
 
     // index is the pattern hash of each k-mer in text.
     std::vector<hash_t> index(n_kmer, 0);
@@ -350,7 +416,7 @@ std::set<std::string> FrequentWordsBySorting(const std::string_view text, const 
 std::unordered_map<std::string, uint> FrequencyTable(const std::string_view text, const int k)
 {
     size_t t_len = text.length();
-    size_t n_kmer = KmerCount(t_len, k);
+    size_t n_kmer = SubstrCount(t_len, k);
 
     if (!isPatternValid(t_len, k))
         return std::unordered_map<std::string, uint>();
@@ -376,7 +442,7 @@ std::unordered_map<std::string, uint> FrequencyTable(const std::string_view text
 std::vector<uint> FrequencyArray(const std::string_view text, const int k)
 {
     size_t t_len = text.length();
-    size_t n_kmer = KmerCount(t_len, k);
+    size_t n_kmer = SubstrCount(t_len, k);
 
     if (!isPatternValid(t_len, k))
         return std::vector<uint>();
@@ -405,61 +471,6 @@ is_ntp(char c)
     default:
       return false;
     }
-}
-
-/*!
-    \brief Convert DNA base to number
-    
-    \param base DNA base
-    \return int Integer of DNA base
- */
-inline int NucleobaseToInt(const char base)
-{
-    int val;
-    switch (toupper(base))
-    {
-        case 'A':
-            val = 0;
-            break;
-        case 'C':
-            val = 1;
-            break;
-        case 'G':
-            val = 2;
-            break;
-        case 'T':
-            val = 3;
-            break;
-        default:
-            throw UnknownNucleotideError(base);
-    }
-
-    return val;
-}
-
-inline char IntToNucleobase(const int i)
-{
-    char base;
-    switch (i)
-    {
-        case 0:
-            base = 'A';
-            break;
-        case 1:
-            base = 'C';
-            break;
-        case 2:
-            base = 'G';
-            break;
-        case 3:
-            base = 'T';
-            break;
-        default:
-            throw std::runtime_error("Only integer 0~3 can be converted to nucleobase symbol");
-            break;
-    }
-
-    return base;
 }
 
 const int MAX_HASHABLE_LENGTH = std::numeric_limits<hash_t>::digits / 2;
@@ -535,12 +546,12 @@ std::set<std::string> FindClumpsRaw(const std::string_view genome, int k, int wi
     // This is used to mark which pattern formed a clump. The pos of this
     // vector is hash value of a k-mer.
     std::vector<bool> is_clump(pow(4, k), false);
-    for (size_t i = 0; i < KmerCount(genome.length(), window_length); i++) {
+    for (size_t i = 0; i < SubstrCount(genome.length(), window_length); i++) {
         // Re-initialise to zero.
         std::fill(freq_array.begin(), freq_array.end(), 0);
 
         auto genome_window = genome.substr(i, window_length);
-        for (int i = 0; i < KmerCount(genome_window.length(), k); i++) {
+        for (int i = 0; i < SubstrCount(genome_window.length(), k); i++) {
             freq_array[PatternToNumber(genome_window.substr(i, k))]++;
         }
 
@@ -567,7 +578,7 @@ std::set<std::string> FindClumpsRaw2(const std::string_view genome, int k, int w
     std::set<std::string> clumps;
 
     // Loop each window in genome.
-    for (size_t i = 0; i < KmerCount(genome.length(), window_length); i++) {
+    for (size_t i = 0; i < SubstrCount(genome.length(), window_length); i++) {
         // Generate frequency table of each window.
         auto freq_table = FrequencyTable(genome.substr(i, window_length), k);
         // Find k-mers that appear a given times at least.
@@ -598,7 +609,7 @@ std::set<std::string> FindClumpsBetter(const std::string_view genome, int k, int
     }
 
     // Update following window
-    for (size_t i = 1; i < KmerCount(genome.length(), window_length); i++) {
+    for (size_t i = 1; i < SubstrCount(genome.length(), window_length); i++) {
         // Prior k-mer have been passed so we reduce it's frequency. Because
         // it's frequency is lower than last window, there is no need to check
         // it's number of occurrence.
@@ -635,7 +646,7 @@ std::set<std::string> FindClumpsBetterWithHashTable(const std::string_view genom
         is_clump[p.first] = p.second >= times ? true : false;
 
     // Update following window
-    for (size_t i = 1; i < KmerCount(genome.length(), window_length); i++) {
+    for (size_t i = 1; i < SubstrCount(genome.length(), window_length); i++) {
         // FIXME in C++20: Heterogeneous lookup for unordered containers (transparent hashing)
         // see http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0919r2.html
         auto prior_kmer = std::string(genome.substr(i-1, k));

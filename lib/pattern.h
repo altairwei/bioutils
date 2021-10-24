@@ -26,7 +26,6 @@ hash_t PatternToNumberBitwise(const std::string_view pattern);
 hash_t PatternToNumberRecursive(const std::string_view pattern);
 std::string NumberToPatternBitwise(const hash_t number, const int length);
 bool is_ntp(char c);
-int NucleobaseToInt(const char);
 
 void find_do(const std::string_view text, const std::string_view pattern,
     std::function<void(const size_t, const std::string_view, const std::string_view)> callback);

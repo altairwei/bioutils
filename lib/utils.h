@@ -49,6 +49,28 @@ size_t MaxArray(const T &input_array) noexcept(false)
     return max;
 }
 
+#define REPEAT_LIST_0(x)
+#define REPEAT_LIST_1(x) x
+#define REPEAT_LIST_2(x) x, REPEAT_LIST_1(x)
+#define REPEAT_LIST_3(x) x, REPEAT_LIST_2(x)
+#define REPEAT_LIST_4(x) x, REPEAT_LIST_3(x)
+#define REPEAT_LIST_5(x) x, REPEAT_LIST_4(x)
+#define REPEAT_LIST_6(x) x, REPEAT_LIST_5(x)
+#define REPEAT_LIST_7(x) x, REPEAT_LIST_6(x)
+#define REPEAT_LIST_8(x) x, REPEAT_LIST_7(x)
+#define REPEAT_LIST_9(x) x, REPEAT_LIST_8(x)
+#define REPEAT_LIST_10(x) x, REPEAT_LIST_9(x)
+#define REPEAT_LIST_20(x) REPEAT_LIST_10(x), REPEAT_LIST_10(x)
+#define REPEAT_LIST_30(x) REPEAT_LIST_10(x), REPEAT_LIST_20(x)
+#define REPEAT_LIST_40(x) REPEAT_LIST_10(x), REPEAT_LIST_30(x)
+#define REPEAT_LIST_50(x) REPEAT_LIST_10(x), REPEAT_LIST_40(x)
+#define REPEAT_LIST_60(x) REPEAT_LIST_10(x), REPEAT_LIST_50(x)
+#define REPEAT_LIST_70(x) REPEAT_LIST_10(x), REPEAT_LIST_60(x)
+#define REPEAT_LIST_80(x) REPEAT_LIST_10(x), REPEAT_LIST_70(x)
+#define REPEAT_LIST_90(x) REPEAT_LIST_10(x), REPEAT_LIST_80(x)
+#define REPEAT_LIST_100(x) REPEAT_LIST_10(x), REPEAT_LIST_90(x)
+#define REPEAT_LIST_N(x, N) REPEAT_LIST_##N(x)
+
 BIOUTILS_END_SUB_NAMESPACE(utils)
 
 

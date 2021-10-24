@@ -24,13 +24,43 @@ Iter select_randomly(Iter start, Iter end) {
 
 static const std::array<char, 4> NUCLEOTIDES = {'A', 'C', 'G', 'T'};
 
+template <typename T>
+static std::string random_sequence(const T length) {
+    std::string seq(length, 'A');
+    std::generate(seq.begin(), seq.end(), [] {
+        return *select_randomly(NUCLEOTIDES.begin(), NUCLEOTIDES.end());
+    });
+    return seq;
+}
+
+/*
+    Benchmark for PatternCount
+*/
+
+template <typename ...ExtraArgs>
+void BenchPatternCount(benchmark::State& state, ExtraArgs&&... extra_args) {
+    auto sequence_length = state.range(0);
+    auto pattern_length = 10;
+
+    std::string genome = random_sequence(sequence_length);
+    std::string pattern = random_sequence(pattern_length);
+
+    for (auto _ : state) {
+        PatternCount(genome, pattern, extra_args...);
+    }
+}
+
+BENCHMARK_CAPTURE(BenchPatternCount, Fast, AlgorithmEfficiency::Fast)->RangeMultiplier(2)->Range(1024, 1024<<12);
+BENCHMARK_CAPTURE(BenchPatternCount, Fastest, AlgorithmEfficiency::Fastest)->RangeMultiplier(2)->Range(1024, 1024<<12);
+
+/*
+    Benchmark for FindClumps
+*/
+
 template <typename ...ExtraArgs>
 void BenchFindClumps(benchmark::State& state, ExtraArgs&&... extra_args) {
     auto sequence_length = state.range(0);
-    std::string genome(sequence_length, 'A');
-    std::generate(genome.begin(), genome.end(), [] {
-        return *select_randomly(NUCLEOTIDES.begin(), NUCLEOTIDES.end());
-    });
+    std::string genome = random_sequence(sequence_length);
 
     for (auto _ : state) {
         FindClumps(genome, 10, 500, 20, extra_args...);
