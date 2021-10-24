@@ -24,13 +24,13 @@ static inline bool isPatternValid(const size_t seq_len, const size_t pattern_len
 static const char INT_TO_BASE[4] = {'A', 'C', 'G', 'T'};
 
 static const int BASE_TO_INT[256] = {
-    REPEAT_LIST_N(0, 60), REPEAT_LIST_N(0, 5),
-//  A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
-    0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0,
-    REPEAT_LIST_N(0, 6),
-//  a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
-    0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0,
-    REPEAT_LIST_N(0, 100), REPEAT_LIST_N(0, 30), REPEAT_LIST_N(0, 3)
+    REPEAT_LIST_N(-1, 60), REPEAT_LIST_N(-1, 5),
+//  A,  B, C,  D,  E,  F, G,  H,  I,  J,  K,  L,  M,  N,  O,  P,  Q,  R,  S, T,  U,  V,  W,  X,  Y,  Z
+    0, -1, 1, -1, -1, -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 3, -1, -1, -1, -1, -1, -1,
+    REPEAT_LIST_N(-1, 6),
+//  a,  b, c,  d,  e,  f, g,  h,  i,  j,  k,  l,  m,  n,  o,  p,  q,  r,  s, t,  u,  v,  w,  x,  y,  z
+    0, -1, 1, -1, -1, -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 3, -1, -1, -1, -1, -1, -1,
+    REPEAT_LIST_N(-1, 100), REPEAT_LIST_N(-1, 30), REPEAT_LIST_N(-1, 3)
 };
 
 /*!
@@ -189,12 +189,12 @@ static size_t PatternCount_RK(const std::string_view text, const std::string_vie
     hash_t mask = 0;
     mask = ~((~mask) << (2*(p_len - 1)));
 
-    char base;
+    int base;
     for (int i = 1; i < SubstrCount(t_len, p_len); i++) {
-        base = text[i+ p_len - 1];
-        if (!ISNTP(base)) throw UnknownNucleotideError(base);
+        base = BASE_TO_INT[text[i+ p_len - 1]];
+        if (base == -1) throw UnknownNucleotideError(base);
         // Compute hash of next k-mer
-        kmer_hash = ((kmer_hash & mask) << 2) | BASE_TO_INT[base];
+        kmer_hash = ((kmer_hash & mask) << 2) | base;
         // If hash values are matched then k-mer and pattern are matched.
         if (kmer_hash == pattern_hash)
             count++;
