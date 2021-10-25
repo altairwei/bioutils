@@ -594,7 +594,7 @@ std::set<std::string> FindClumpsRaw2(const std::string_view genome, int k, int w
     The max \a k is 32, which can be hashed in to \c hash_t type. The
     argument \a k is also limited by the available memory.
  */
-std::set<std::string> FindClumpsBetter(const std::string_view genome, int k, int window_length, int times)
+std::set<std::string> FindClumpsBetterWithPerfectHash(const std::string_view genome, int k, int window_length, int times)
 {
     std::set<std::string> clumps;
     // This is used to mark which pattern formed a clump. The pos of this
@@ -633,9 +633,9 @@ std::set<std::string> FindClumpsBetter(const std::string_view genome, int k, int
 
 /*!
     By benchmark testing, this function is not as efficient on large data sets
-    as FindClumpsBetter
+    as FindClumpsBetterWithPerfectHash
  */
-std::set<std::string> FindClumpsBetterWithHashTable(const std::string_view genome, int k, int window_length, int times)
+std::set<std::string> FindClumpsBetterWithStdHash(const std::string_view genome, int k, int window_length, int times)
 {
     std::set<std::string> clumps;
     std::unordered_map<std::string, bool> is_clump;
@@ -685,15 +685,15 @@ std::set<std::string> FindClumps(const std::string_view genome, int k, int windo
     case AlgorithmEfficiency::Fast:
         return FindClumpsRaw2(genome, k, window_length, times);
     case AlgorithmEfficiency::Faster:
-        return FindClumpsBetter(genome, k, window_length, times);
+        return FindClumpsBetterWithPerfectHash(genome, k, window_length, times);
     case AlgorithmEfficiency::Fastest:
-        return FindClumpsBetterWithHashTable(genome, k, window_length, times);
+        return FindClumpsBetterWithStdHash(genome, k, window_length, times);
     default:
     {
         if (k > MAX_HASHABLE_LENGTH)
-            return FindClumpsBetterWithHashTable(genome, k, window_length, times);
+            return FindClumpsBetterWithStdHash(genome, k, window_length, times);
         else
-            return FindClumpsBetter(genome, k, window_length, times);
+            return FindClumpsBetterWithPerfectHash(genome, k, window_length, times);
     }
     }
 }

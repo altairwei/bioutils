@@ -940,9 +940,9 @@ INSTANTIATE_TEST_SUITE_P(
         case AlgorithmEfficiency::Fast:
             return "FindClumpsRaw2";
         case AlgorithmEfficiency::Faster:
-            return "FindClumpsBetter";
+            return "FindClumpsBetterWithPerfectHash";
         case AlgorithmEfficiency::Fastest:
-            return "FindClumpsBetter2";
+            return "FindClumpsBetterWithStdHash";
         default:
             return "Unknown";
         }
