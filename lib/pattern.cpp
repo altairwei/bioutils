@@ -698,4 +698,45 @@ std::set<std::string> FindClumps(const std::string_view genome, int k, int windo
     }
 }
 
+/*!
+    \brief Find a Position in a Genome Minimizing the Skew
+    
+    Define the skew of a DNA string \a genome as the difference between the
+    total number of occurrences of 'G' and 'C' in \a genome. The skew should
+    achieve a minimum at the position where the reverse half-strand ends and
+    the forward half-strand begins.
+ */
+std::vector<size_t> FindMinimumSkew(const std::string_view genome)
+{
+    int accumulator = 0, min = 0;
+    std::vector<int> skew(genome.length() + 1, 0);
+    for (size_t i = 0; i < genome.length(); i++) {
+        switch (genome[i])
+        {
+        case 'g':
+        case 'G':
+            skew[i+1] = ++accumulator;
+            break;
+        case 'c':
+        case 'C':
+            skew[i+1] = --accumulator;
+            break;
+        default:
+            skew[i+1] = accumulator;
+            break;
+        }
+
+        if (accumulator < min) {
+            min = accumulator;
+        }
+    }
+
+    std::vector<size_t> locations;
+    for (size_t i = 0; i < skew.size(); i++) {
+        if (skew[i] == min) locations.push_back(i);
+    }
+
+    return locations;
+}
+
 BIOUTILS_END_SUB_NAMESPACE(algorithms)

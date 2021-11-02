@@ -949,4 +949,51 @@ INSTANTIATE_TEST_SUITE_P(
     }
 );
 
+TEST(TestFindMinimumSkew, NormalInput) {
+    EXPECT_EQ(
+        FindMinimumSkew("CCTATCGGTGGATTAGCATGTCCCTGTACGTTTCGCCGCGAACTAGTTCACACGGCTTGATGGCAAATGGTTTTTCCGGCGACCGTAATCGTCCACCGAG"),
+        std::vector<size_t>({53, 97})
+    );
+
+    EXPECT_EQ(
+        FindMinimumSkew("TAAAGACTGCCGAGAGGCCAACACGAGTGCTAGAACGAGGGGCGTAAACGCGGGTCCGAT"),
+        std::vector<size_t>({11, 24})
+    );
+
+    /*
+        This dataset checks if your code’s indexing is off. Specifically, it verifies that your code
+        is not returning an index 1 too high (i.e. 4) or 1 too low (i.e. 2). 
+    */
+    EXPECT_EQ(
+        FindMinimumSkew("ACCG"),
+        std::vector<size_t>({3})
+    );
+
+    /*
+        This dataset checks to see if your code is missing the last symbol of ​Genome.
+    */
+    EXPECT_EQ(
+        FindMinimumSkew("ACCC"),
+        std::vector<size_t>({4})
+    );
+
+    /*
+        This dataset makes sure you’re not accidentally finding the maximum skew instead of the
+        minimum skew.
+    */
+    EXPECT_EQ(
+        FindMinimumSkew("CCGGGT"),
+        std::vector<size_t>({2})
+    );
+
+    /*
+        First, this dataset checks if you are only finding 1 index (and not multiple indices). Then,
+        it checks if you are using a delimiter to separate your indices (ideally a space character).
+    */
+    EXPECT_EQ(
+        FindMinimumSkew("CCGGCCGG"),
+        std::vector<size_t>({2, 6})
+    );
+}
+
 } // namespace

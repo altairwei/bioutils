@@ -131,6 +131,19 @@ main( int argc, char *argv[], char *envp[] )
         std::cout << std::endl;
     });
 
+    CLI::App* skew_subapp = app.add_subcommand("skew", "Find a Position in a Genome Minimizing the Skew");
+    skew_subapp->fallthrough();
+    skew_subapp->callback([&] {
+        string seq = bioutils::IO::read_input(file_name);
+        seq.erase(std::remove(seq.begin(), seq.end(), '\n'), seq.end());
+        seq.erase(std::remove(seq.begin(), seq.end(), '\r'), seq.end());
+
+        auto locations = algorithms::FindMinimumSkew(seq);
+        for (auto loc : locations)
+            std::cout << loc << ' ';
+        std::cout << std::endl;
+    });
+
     CLI11_PARSE(app, argc, argv);
 
     return 0;
