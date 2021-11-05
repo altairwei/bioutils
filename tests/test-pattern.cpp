@@ -996,4 +996,69 @@ TEST(TestFindMinimumSkew, NormalInput) {
     );
 }
 
+TEST(TestHammingDistance, NormalInput) {
+    EXPECT_EQ(
+        HammingDistance("GGGCCGTTGGT", "GGACCGTTGAC"),
+        3
+    );
+
+    /*
+        This dataset checks if your code isn’t keeping count (i.e. returns ‘0’ when the answer is
+        clearly nonzero) or if your code returns a negative value, which is impossible.
+    */
+    EXPECT_EQ(
+        HammingDistance("AAAA", "TTTT"),
+        4
+    );
+
+    /*
+        This dataset checks if your code is finding Edit Distance (which would be 2) instead of
+        Hamming Distance.
+    */
+    EXPECT_EQ(
+        HammingDistance("ACGTACGT", "TACGTACG"),
+        8
+    );
+
+    /*
+        This dataset checks if your code is returning the number of matches (2) instead of the
+        number of mismatches (6).
+    */
+    EXPECT_EQ(
+        HammingDistance("ACGTACGT", "CCCCCCCC"),
+        6
+    );
+
+    /*
+        This dataset checks if your code works on a dataset where the two input strings have no
+        matches.
+    */
+    EXPECT_EQ(
+        HammingDistance("ACGTACGT", "TGCATGCA"),
+        8
+    );
+
+    /*
+        This dataset checks if you have an off­by­one error at the beginning (i.e. you are starting
+        at the second character of the strings instead of the first character).
+    */
+    EXPECT_EQ(
+        HammingDistance(
+            "GATAGCAGCTTCTGAACTGGTTACCTGCCGTGAGTAAATTAAAATTTTATTGACTTAGGTCACTAAATACT",
+            "AATAGCAGCTTCTCAACTGGTTACCTCGTATGAGTAAATTAGGTCATTATTGACTCAGGTCACTAACGTCT"),
+        15
+    );
+
+    /*
+        This dataset checks if you have an off­by­one error at the end (i.e. you are ending at the
+        second­to­last character of the strings instead of the last character).
+    */
+    EXPECT_EQ(
+        HammingDistance(
+            "AGAAACAGACCGCTATGTTCAACGATTTGTTTTATCTCGTCACCGGGATATTGCGGCCACTCATCGGTCAGTTGATTACGCAGGGCGTAAATCGCCAGAATCAGGCTG",
+            "AGAAACCCACCGCTAAAAACAACGATTTGCGTAGTCAGGTCACCGGGATATTGCGGCCACTAAGGCCTTGGATGATTACGCAGAACGTATTGACCCAGAATCAGGCTC"),
+        28
+    );
+}
+
 } // namespace

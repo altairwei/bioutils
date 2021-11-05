@@ -739,4 +739,29 @@ std::vector<size_t> FindMinimumSkew(const std::string_view genome)
     return locations;
 }
 
+/*!
+    \brief Compute the Hamming distance between two DNA strings
+
+    We say that position i in k-mers p1 … pk and q1 … qk is a mismatch
+    if pi ≠ qi. For example, CGAAT and CGGAC have two mismatches. The number of
+    mismatches between strings p and q is called the Hamming distance between
+    these strings and is denoted HammingDistance(p, q).
+ */
+size_t HammingDistance(const std::string_view pattern1, const std::string_view pattern2) noexcept(false)
+{
+    size_t d = 0;
+
+    if (pattern1.length() != pattern2.length())
+        throw std::runtime_error(
+            "Can not compute Hamming distance between "
+            "sequences of unequal length.");
+
+    for (size_t i = 0; i < pattern1.length(); i++) {
+        if (pattern1[i] != pattern2[i])
+            d++;
+    }
+
+    return d;
+}
+
 BIOUTILS_END_SUB_NAMESPACE(algorithms)

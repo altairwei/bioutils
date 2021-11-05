@@ -43,6 +43,8 @@ std::vector<uint> FrequencyArray(const std::string_view text, const int k);
 std::set<std::string> FindClumps(const std::string_view genome, int k, int window_length, int times, AlgorithmEfficiency algo = AlgorithmEfficiency::Default);
 std::vector<size_t> FindMinimumSkew(const std::string_view genome);
 
+size_t HammingDistance(const std::string_view pattern1, const std::string_view pattern2);
+
 BIOUTILS_END_SUB_NAMESPACE(algorithms)
 
 #endif // LIB_PATTERN_H
