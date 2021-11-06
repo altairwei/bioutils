@@ -1061,4 +1061,79 @@ TEST(TestHammingDistance, NormalInput) {
     );
 }
 
+TEST(TestPatternIndexApproximate, NormalInput) {
+    EXPECT_EQ(
+        PatternIndexApproximate(
+            "CGCCCGAATCCAGAACGCATTCCCATATTTCGGGACCACTGGCCTCCACGGTACGGACGTCAATCAAATGCCTAGCGGCTTGTGGTTTCTCCTACGCTCC",
+            "ATTCTGGA", 3),
+        std::vector<size_t>({6, 7, 26, 27, 78})
+    );
+
+    /*
+        This dataset checks if you are only counting instances where the number of mismatches is
+        exactly equal to d (i.e. ignoring instances where mismatch < d). 
+    */
+    EXPECT_EQ(
+        PatternIndexApproximate(
+            "TTTTTTAAATTTTAAATTTTTT", "AAA", 2),
+        std::vector<size_t>({4, 5, 6, 7, 8, 11, 12, 13, 14, 15})
+    );
+
+    /*
+        This dataset checks if your code has an off-by-one error at the beginning of Text (i.e. your 
+        code is not checking the the leftmost substring of Text).
+    */
+    EXPECT_EQ(
+        PatternIndexApproximate(
+            "GAGCGCTGGGTTAACTCGCTACTTCCCGACGAGCGCTGTGGCGCAAATTGGCGATGA"
+            "AACTGCAGAGAGAACTGGTCATCCAACTGAATTCTCCCCGCTATCGCATTTTGATGC"
+            "GCGCCGCGTCGATT", "GAGCGCTGG", 2),
+        std::vector<size_t>({0, 30, 66})
+    );
+
+    /*
+        This dataset checks if your code has an off-by-one error at the end of Text (i.e. your code
+        is not checking the the rightmost substring of Text).
+    */
+    EXPECT_EQ(
+        PatternIndexApproximate(
+            "CCAAATCCCCTCATGGCATGCATTCCCGCAGTATTTAATCCTTTCATTCTGCATATAA"
+            "GTAGTGAAGGTATAGAAACCCGTTCAAGCCCGCAGCGGTAAAACCGAGAACCATGA"
+            "TGAATGCACGGCGATTGCGCCATAATCCAAACA", "AATCCTTTCA", 3),
+        std::vector<size_t>({3, 36, 74, 137})
+    );
+
+    /*
+        This  dataset  checks  if  your  code  is  correctly  accounting  for  overlapping  instances  of
+        Pattern in Text.
+    */
+    EXPECT_EQ(
+        PatternIndexApproximate(
+            "CCGTCATCCGTCATCCTCGCCACGTTGGCATGCATTCCGTCATCCCGTCAGGCATACT"
+            "TCTGCATATAAGTACAAACATCCGTCATGTCAAAGGGAGCCCGCAGCGGTAAAACC"
+            "GAGAACCATGATGAATGCACGGCGATTGC", "CCGTCATCC", 3),
+        std::vector<size_t>({0, 7, 36, 44, 48, 72, 79, 112})
+    );
+
+    /*
+        This  dataset  checks  if  you  are  only  counting  instances  of  Pattern  with  less  than  d
+        mismatches (as opposed to instances of Pattern with less than or equal to d mismatches).
+    */
+    EXPECT_EQ(
+        PatternIndexApproximate(
+            "AAAAAA", "TTT", 3),
+        std::vector<size_t>({0, 1, 2, 3})
+    );
+
+    /*
+        This dataset checks if your code works with input where d = 0 (i.e. only perfect matches
+        are allowed).
+    */
+    EXPECT_EQ(
+        PatternIndexApproximate(
+            "CCACCT", "CCA", 0),
+        std::vector<size_t>({0})
+    );
+}
+
 } // namespace

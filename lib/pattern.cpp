@@ -764,4 +764,26 @@ size_t HammingDistance(const std::string_view pattern1, const std::string_view p
     return d;
 }
 
+/*!
+    \brief Find All Approximate Occurrences of a Pattern in a String
+
+    We say that a k-mer \a pattern appears as a substring of \a text with at
+    most \a d mismatches if there is some k-mer substring pattern2 of \a text
+    having \a d or fewer mismatches with \a pattern, i.e., HammingDistance(pattern, pattern2) ≤ d.
+ */
+std::vector<size_t> PatternIndexApproximate(const std::string_view text, const std::string_view pattern, const size_t d)
+{
+    size_t text_len = text.length();
+    size_t pattern_len = pattern.length();
+
+    std::vector<size_t> output;
+    for (size_t i = 0; i < SubstrCount(text_len, pattern_len); i++) {
+        if (HammingDistance(text.substr(i, pattern_len), pattern) <= d) {
+            output.push_back(i);
+        }
+    }
+
+    return output;
+}
+
 BIOUTILS_END_SUB_NAMESPACE(algorithms)

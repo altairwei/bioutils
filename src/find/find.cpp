@@ -76,18 +76,22 @@ main( int argc, char *argv[], char *envp[] )
         cout << count(text, pattern, algorithm) << endl;
     });
 
+    int hamming_distance = 0;
     CLI::App* index_subapp = app.add_subcommand("index", "Get Index of Pattern in the Sequence");
     index_subapp->fallthrough();
     index_subapp->add_option("-p,--pattern", pattern, "k-mer pattern to index.")->required();
+    index_subapp->add_option("-d,--hamming-distance", hamming_distance,
+        "Find all approximate (less than or equal to d) occurrences of a pattern in a string.");
     index_subapp->callback([&]() {
-        string text;
-        if (file_name == "-") {
-            text = IO::read_stdin();
-        } else {
-            text = IO::read_file(file_name);
-        }
+        string seq = bioutils::IO::read_input(file_name);
+        seq.erase(std::remove(seq.begin(), seq.end(), '\n'), seq.end());
+        seq.erase(std::remove(seq.begin(), seq.end(), '\r'), seq.end());
 
-        std::vector<size_t> output = algorithms::PatternIndex(text.c_str(), pattern.c_str());
+        std::vector<size_t> output;
+        if (hamming_distance > 0)
+            output = algorithms::PatternIndexApproximate(seq, pattern, hamming_distance);
+        else
+            output = algorithms::PatternIndex(seq, pattern);
 
         for (size_t i : output) {
             cout << i << " ";

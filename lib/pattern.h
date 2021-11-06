@@ -31,6 +31,7 @@ void find_do(const std::string_view text, const std::string_view pattern,
     std::function<void(const size_t, const std::string_view, const std::string_view)> callback);
 std::size_t PatternCount(const std::string_view text, const std::string_view pattern, AlgorithmEfficiency algo);
 std::vector<size_t> PatternIndex(const std::string_view text, const std::string_view pattern);
+std::vector<size_t> PatternIndexApproximate(const std::string_view text, const std::string_view pattern, const size_t d);
 
 std::set<std::string> FrequentWords(const std::string_view text, const int k, AlgorithmEfficiency algo = AlgorithmEfficiency::Slow);
 std::set<std::string> FrequentWordsSlow(const std::string_view text, const int k);
