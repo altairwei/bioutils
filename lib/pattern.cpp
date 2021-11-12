@@ -257,11 +257,11 @@ std::set<std::string> FrequentWords(
     case AlgorithmEfficiency::Slow:
         return FrequentWordsSlow(text, k);
     case AlgorithmEfficiency::Fast:
-        return FrequentWordsBetter(text, k);
+        return FrequentWordsByPerfectHash(text, k);
     case AlgorithmEfficiency::Faster:
-        return FrequentWordsFast(text, k);
-    case AlgorithmEfficiency::Fastest:
         return FrequentWordsBySorting(text, k);
+    case AlgorithmEfficiency::Fastest:
+        return FrequentWordsByStdHash(text, k);
     default:
         break;
     }
@@ -315,7 +315,7 @@ FrequentWordsSlow(const std::string_view text, const int k)
     
     This version of FrequentWords is implemented with FrequencyTable()
  */
-std::set<std::string> FrequentWordsFast(const std::string_view text, const int k)
+std::set<std::string> FrequentWordsByStdHash(const std::string_view text, const int k)
 {
     if (!isPatternValid(text.length(), k))
         return std::set<std::string>();
@@ -337,7 +337,7 @@ std::set<std::string> FrequentWordsFast(const std::string_view text, const int k
     
     This version of FrequentWords is implemented with FrequencyArray()
  */
-std::set<std::string> FrequentWordsBetter(const std::string_view text, const int k)
+std::set<std::string> FrequentWordsByPerfectHash(const std::string_view text, const int k)
 {
     if (!isPatternValid(text.length(), k))
         return std::set<std::string>();
@@ -347,6 +347,8 @@ std::set<std::string> FrequentWordsBetter(const std::string_view text, const int
 
     std::set<std::string> max_freq;
 
+    // Compare to FrequentWordsByStdHash, here too much time wasted looping
+    // empty areas of FrequencyArray.
     for (int i = 0; i < freq_array.size(); i++) {
         if (freq_array[i] == max) {
             max_freq.insert(
@@ -366,6 +368,11 @@ std::set<std::string> FrequentWordsBetter(const std::string_view text, const int
     to produce an array index. Then we sort index. Since identical \a k -mer
     clump together in the sorted array, frequent \a k -mer are the longest runs
     of identical pattern hash in sorted index.
+
+    This method is not as efficient as FrequentWordsByStdHash, because FrequencyTable
+    is very efficient. The length of FrequencyTable result will be shorter than
+    index/count array of FrequentWordsBySorting and then sorting index array also
+    increases the running time.
  */
 std::set<std::string> FrequentWordsBySorting(const std::string_view text, const int k)
 {
@@ -377,7 +384,7 @@ std::set<std::string> FrequentWordsBySorting(const std::string_view text, const 
     // index is the pattern hash of each k-mer in text.
     std::vector<hash_t> index(n_kmer, 0);
     for (size_t i = 0; i < n_kmer; i++)
-        index[i] = PatternToNumber(text.substr(i, k));
+        index[i] = PatternToNumberBitwise(text.substr(i, k));
 
     // Sorted with the default operator<
     std::sort(index.begin(), index.end());
@@ -504,7 +511,7 @@ hash_t PatternToNumberBitwise(const std::string_view pattern)
     auto p = pattern.begin();
 
     while (len-- > 0) {
-        int val = NucleobaseToInt(*p++);
+        int val = BASE_TO_INT[*p++];
         hash |= val << 2*len;
     }
 
@@ -530,7 +537,8 @@ std::string NumberToPatternBitwise(const hash_t number, const int length)
         hash_t mask = 0;
         mask = ~((~mask) << (2*len));
         pattern.push_back(
-            IntToNucleobase((number & mask) >> 2*(len - 1)));
+            INT_TO_BASE[(number & mask) >> 2*(len - 1)]
+        );
     }
 
     return pattern;
@@ -784,6 +792,24 @@ std::vector<size_t> PatternIndexApproximate(const std::string_view text, const s
     }
 
     return output;
+}
+
+std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, const int k, const int d)
+{
+    if (!isPatternValid(text.length(), k))
+        return std::set<std::string>();
+
+    auto kmer_freq_table = FrequencyTable(text, k);
+    // 重新定义最大值，计算所有 Hamming 距离小于 d 的组合。
+    size_t max = MaxMap(kmer_freq_table);
+
+    std::set<std::string> max_freq;
+    for (auto p : kmer_freq_table) {
+        if (p.second == max)
+            max_freq.insert(p.first);
+    }
+
+    return max_freq;
 }
 
 BIOUTILS_END_SUB_NAMESPACE(algorithms)

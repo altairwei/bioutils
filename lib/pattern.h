@@ -35,11 +35,12 @@ std::vector<size_t> PatternIndexApproximate(const std::string_view text, const s
 
 std::set<std::string> FrequentWords(const std::string_view text, const int k, AlgorithmEfficiency algo = AlgorithmEfficiency::Slow);
 std::set<std::string> FrequentWordsSlow(const std::string_view text, const int k);
-std::set<std::string> FrequentWordsBetter(const std::string_view text, const int k);
-std::set<std::string> FrequentWordsFast(const std::string_view text, const int k);
+std::set<std::string> FrequentWordsByPerfectHash(const std::string_view text, const int k);
+std::set<std::string> FrequentWordsByStdHash(const std::string_view text, const int k);
 std::set<std::string> FrequentWordsBySorting(const std::string_view text, const int k);
 std::unordered_map<std::string, uint> FrequencyTable(const std::string_view text, const int k);
 std::vector<uint> FrequencyArray(const std::string_view text, const int k);
+std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, const int k, const int d);
 
 std::set<std::string> FindClumps(const std::string_view genome, int k, int window_length, int times, AlgorithmEfficiency algo = AlgorithmEfficiency::Default);
 std::vector<size_t> FindMinimumSkew(const std::string_view genome);

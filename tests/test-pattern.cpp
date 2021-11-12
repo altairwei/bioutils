@@ -266,9 +266,9 @@ INSTANTIATE_TEST_SUITE_P(
         case AlgorithmEfficiency::Slow:
             return "FrequentWordsSlow";
         case AlgorithmEfficiency::Fast:
-            return "FrequentWordsBetter";
+            return "FrequentWordsByPerfectHash";
         case AlgorithmEfficiency::Faster:
-            return "FrequentWordsFast";
+            return "FrequentWordsByStdHash";
         case AlgorithmEfficiency::Fastest:
             return "FrequentWordsBySorting";
         default:

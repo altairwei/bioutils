@@ -34,8 +34,9 @@ static std::string random_sequence(const T length) {
 }
 
 /*
-    Benchmark for PatternCount
-*/
+ * Benchmark for PatternCount
+ * ——————————————————————————————————————————————————
+ */
 
 template <typename ...ExtraArgs>
 void BenchPatternCount(benchmark::State& state, ExtraArgs&&... extra_args) {
@@ -54,8 +55,28 @@ BENCHMARK_CAPTURE(BenchPatternCount, Fast, AlgorithmEfficiency::Fast)->RangeMult
 BENCHMARK_CAPTURE(BenchPatternCount, Fastest, AlgorithmEfficiency::Fastest)->RangeMultiplier(2)->Range(1024, 1024<<12);
 
 /*
-    Benchmark for FindClumps
-*/
+ * Benchmark for FrequentWords
+ * ——————————————————————————————————————————————————
+ */
+template <typename ...ExtraArgs>
+void BenchFrequentWords(benchmark::State& state, ExtraArgs&&... extra_args) {
+    auto sequence_length = state.range(0);
+    std::string genome = random_sequence(sequence_length);
+
+    for (auto _ : state) {
+        FrequentWords(genome, 6, extra_args...);
+    }
+}
+
+//BENCHMARK_CAPTURE(BenchFrequentWords, Slow, AlgorithmEfficiency::Slow)->RangeMultiplier(2)->Range(1024, 1024<<10);
+BENCHMARK_CAPTURE(BenchFrequentWords, Fast, AlgorithmEfficiency::Fast)->RangeMultiplier(2)->Range(1024, 1024<<12);
+BENCHMARK_CAPTURE(BenchFrequentWords, Faster, AlgorithmEfficiency::Faster)->RangeMultiplier(2)->Range(1024, 1024<<12);
+BENCHMARK_CAPTURE(BenchFrequentWords, Fastest, AlgorithmEfficiency::Fastest)->RangeMultiplier(2)->Range(1024, 1024<<12);
+
+/*
+ * Benchmark for FindClumps
+ * ——————————————————————————————————————————————————
+ */
 
 template <typename ...ExtraArgs>
 void BenchFindClumps(benchmark::State& state, ExtraArgs&&... extra_args) {
