@@ -15,12 +15,12 @@ These [questions](http://rosalind.info/problems/list-view/?location=bioinformati
 - [x] BA1F	Find a Position in a Genome Minimizing the Skew
 - [x] BA1G	Compute the Hamming Distance Between Two Strings
 - [x] BA1H	Find All Approximate Occurrences of a Pattern in a String
-- [ ] BA1I	Find the Most Frequent Words with Mismatches in a String
+- [x] BA1I	Find the Most Frequent Words with Mismatches in a String
 - [ ] BA1J	Find Frequent Words with Mismatches and Reverse Complements
 - [x] BA1K	Generate the Frequency Array of a String
 - [x] BA1L	Implement PatternToNumber
 - [x] BA1M	Implement NumberToPattern
-- [ ] BA1N	Generate the d-Neighborhood of a String
+- [x] BA1N	Generate the d-Neighborhood of a String
 - [ ] BA2A	Implement MotifEnumeration
 - [ ] BA2B	Find a Median String
 - [ ] BA2C	Find a Profile-most Probable k-mer in a String

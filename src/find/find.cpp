@@ -104,6 +104,8 @@ main( int argc, char *argv[], char *envp[] )
     CLI::App* freq_subapp = app.add_subcommand("freq", "Find Most Frequent k-mer");
     freq_subapp->fallthrough();
     freq_subapp->add_option("-k,--kmer", kmer, "Length of k-mer to find.")->required();
+    freq_subapp->add_option("-d,--hamming-distance", hamming_distance,
+        "Find the Most Frequent Words with Mismatches (less than or equal to d) in a String.");
     freq_subapp->callback([&]() {
         string text;
         if (file_name == "-") {
@@ -112,7 +114,12 @@ main( int argc, char *argv[], char *envp[] )
             text = IO::read_file(file_name);
         }
 
-        set<string> results = algorithms::FrequentWords(text, kmer);
+        set<string> results;
+        if (hamming_distance > 0)
+            results = algorithms::FrequentWordsWithMismatches(text, kmer, hamming_distance);
+        else
+            results = algorithms::FrequentWords(text, kmer);
+
         for (auto kmer : results) {
             cout << kmer << endl;
         }

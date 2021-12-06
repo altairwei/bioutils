@@ -38,7 +38,9 @@ std::set<std::string> FrequentWordsSlow(const std::string_view text, const int k
 std::set<std::string> FrequentWordsByPerfectHash(const std::string_view text, const int k);
 std::set<std::string> FrequentWordsByStdHash(const std::string_view text, const int k);
 std::set<std::string> FrequentWordsBySorting(const std::string_view text, const int k);
+std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, const int k, const int d);
 std::unordered_map<std::string, uint> FrequencyTable(const std::string_view text, const int k);
+std::unordered_map<std::string, uint> FrequencyTableWithMismatches(const std::string_view text, const int k, const int d);
 std::vector<uint> FrequencyArray(const std::string_view text, const int k);
 std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, const int k, const int d);
 
@@ -46,6 +48,9 @@ std::set<std::string> FindClumps(const std::string_view genome, int k, int windo
 std::vector<size_t> FindMinimumSkew(const std::string_view genome);
 
 size_t HammingDistance(const std::string_view pattern1, const std::string_view pattern2);
+std::set<std::string> NeighborsRecursive(const std::string_view pattern, int d);
+std::set<std::string> ImmediateNeighbors(const std::string_view pattern);
+std::set<std::string> NeighborsIterative(const std::string_view pattern, int d);
 
 BIOUTILS_END_SUB_NAMESPACE(algorithms)
 

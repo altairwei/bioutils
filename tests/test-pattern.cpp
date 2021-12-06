@@ -277,6 +277,33 @@ INSTANTIATE_TEST_SUITE_P(
     }
 );
 
+TEST(TestFrequentWordsWithMismatches, HandleNormalInput) {
+    EXPECT_EQ(
+        FrequentWordsWithMismatches("ACGTTGCATGTCGCATGATGCATGAGAGCT", 4, 1),
+        std::set<std::string>({"GATG", "ATGC", "ATGT"})
+    );
+
+    /*
+        Text contains partial and complete matches for the most frequent word.
+    */
+    EXPECT_EQ(
+            FrequentWordsWithMismatches("AGGT", 2, 1),
+            std::set<std::string>({"GG"})
+    );
+
+    EXPECT_EQ(
+        FrequentWordsWithMismatches("AGGGT", 2, 0),
+        std::set<std::string>({"GG"})
+    );
+
+    /*
+        Text has multiple most frequent words
+    */
+    EXPECT_EQ(
+        FrequentWordsWithMismatches("AGGCGG", 3, 0),
+        std::set<std::string>({"AGG", "GGC", "GCG", "CGG"})
+    );
+}
 
 TEST(TestPatternIndex, HandleNormalInput) {
     EXPECT_EQ(
@@ -1133,6 +1160,79 @@ TEST(TestPatternIndexApproximate, NormalInput) {
         PatternIndexApproximate(
             "CCACCT", "CCA", 0),
         std::vector<size_t>({0})
+    );
+}
+
+TEST(TestNeighbors, NormalInput) {
+
+    auto test1 =  std::set<std::string>({
+        "CCG",
+        "TCG",
+        "GCG",
+        "AAG",
+        "ATG",
+        "AGG",
+        "ACA",
+        "ACC",
+        "ACT",
+        "ACG"
+    });
+
+    EXPECT_EQ(
+        NeighborsRecursive("ACG", 1),
+        test1
+    );
+
+    auto test2 = std::set<std::string>({
+        "AACAATAT", "ACAAATAT", "ACCAAAAT", "ACCAACAT", "ACCAAGAT", "ACCAATAA", "ACCAATAC", "ACCAATAG",
+        "ACCAATAT", "ACCAATCT", "ACCAATGT", "ACCAATTT", "ACCACTAT", "ACCAGTAT", "ACCATTAT", "ACCCATAT",
+        "ACCGATAT", "ACCTATAT", "ACGAATAT", "ACTAATAT", "AGCAATAT", "ATCAATAT", "CACAATAT", "CCAAATAT",
+        "CCCAAAAT", "CCCAACAT", "CCCAAGAT", "CCCAATAA", "CCCAATAC", "CCCAATAG", "CCCAATAT", "CCCAATCT",
+        "CCCAATGT", "CCCAATTT", "CCCACTAT", "CCCAGTAT", "CCCATTAT", "CCCCATAT", "CCCGATAT", "CCCTATAT",
+        "CCGAATAT", "CCTAATAT", "CGCAATAT", "CTCAATAT", "GACAATAT", "GCAAATAT", "GCCAAAAT", "GCCAACAT",
+        "GCCAAGAT", "GCCAATAA", "GCCAATAC", "GCCAATAG", "GCCAATAT", "GCCAATCT", "GCCAATGT", "GCCAATTT",
+        "GCCACTAT", "GCCAGTAT", "GCCATTAT", "GCCCATAT", "GCCGATAT", "GCCTATAT", "GCGAATAT", "GCTAATAT",
+        "GGCAATAT", "GTCAATAT", "TAAAATAT", "TACAAAAT", "TACAACAT", "TACAAGAT", "TACAATAA", "TACAATAC",
+        "TACAATAG", "TACAATAT", "TACAATCT", "TACAATGT", "TACAATTT", "TACACTAT", "TACAGTAT", "TACATTAT",
+        "TACCATAT", "TACGATAT", "TACTATAT", "TAGAATAT", "TATAATAT", "TCAAAAAT", "TCAAACAT", "TCAAAGAT",
+        "TCAAATAA", "TCAAATAC", "TCAAATAG", "TCAAATAT", "TCAAATCT", "TCAAATGT", "TCAAATTT", "TCAACTAT",
+        "TCAAGTAT", "TCAATTAT", "TCACATAT", "TCAGATAT", "TCATATAT", "TCCAAAAA", "TCCAAAAC", "TCCAAAAG",
+        "TCCAAAAT", "TCCAAACT", "TCCAAAGT", "TCCAAATT", "TCCAACAA", "TCCAACAC", "TCCAACAG", "TCCAACAT",
+        "TCCAACCT", "TCCAACGT", "TCCAACTT", "TCCAAGAA", "TCCAAGAC", "TCCAAGAG", "TCCAAGAT", "TCCAAGCT",
+        "TCCAAGGT", "TCCAAGTT", "TCCAATAA", "TCCAATAC", "TCCAATAG", "TCCAATAT", "TCCAATCA", "TCCAATCC",
+        "TCCAATCG", "TCCAATCT", "TCCAATGA", "TCCAATGC", "TCCAATGG", "TCCAATGT", "TCCAATTA", "TCCAATTC",
+        "TCCAATTG", "TCCAATTT", "TCCACAAT", "TCCACCAT", "TCCACGAT", "TCCACTAA", "TCCACTAC", "TCCACTAG",
+        "TCCACTAT", "TCCACTCT", "TCCACTGT", "TCCACTTT", "TCCAGAAT", "TCCAGCAT", "TCCAGGAT", "TCCAGTAA",
+        "TCCAGTAC", "TCCAGTAG", "TCCAGTAT", "TCCAGTCT", "TCCAGTGT", "TCCAGTTT", "TCCATAAT", "TCCATCAT",
+        "TCCATGAT", "TCCATTAA", "TCCATTAC", "TCCATTAG", "TCCATTAT", "TCCATTCT", "TCCATTGT", "TCCATTTT",
+        "TCCCAAAT", "TCCCACAT", "TCCCAGAT", "TCCCATAA", "TCCCATAC", "TCCCATAG", "TCCCATAT", "TCCCATCT",
+        "TCCCATGT", "TCCCATTT", "TCCCCTAT", "TCCCGTAT", "TCCCTTAT", "TCCGAAAT", "TCCGACAT", "TCCGAGAT",
+        "TCCGATAA", "TCCGATAC", "TCCGATAG", "TCCGATAT", "TCCGATCT", "TCCGATGT", "TCCGATTT", "TCCGCTAT",
+        "TCCGGTAT", "TCCGTTAT", "TCCTAAAT", "TCCTACAT", "TCCTAGAT", "TCCTATAA", "TCCTATAC", "TCCTATAG",
+        "TCCTATAT", "TCCTATCT", "TCCTATGT", "TCCTATTT", "TCCTCTAT", "TCCTGTAT", "TCCTTTAT", "TCGAAAAT",
+        "TCGAACAT", "TCGAAGAT", "TCGAATAA", "TCGAATAC", "TCGAATAG", "TCGAATAT", "TCGAATCT", "TCGAATGT",
+        "TCGAATTT", "TCGACTAT", "TCGAGTAT", "TCGATTAT", "TCGCATAT", "TCGGATAT", "TCGTATAT", "TCTAAAAT",
+        "TCTAACAT", "TCTAAGAT", "TCTAATAA", "TCTAATAC", "TCTAATAG", "TCTAATAT", "TCTAATCT", "TCTAATGT",
+        "TCTAATTT", "TCTACTAT", "TCTAGTAT", "TCTATTAT", "TCTCATAT", "TCTGATAT", "TCTTATAT", "TGAAATAT",
+        "TGCAAAAT", "TGCAACAT", "TGCAAGAT", "TGCAATAA", "TGCAATAC", "TGCAATAG", "TGCAATAT", "TGCAATCT",
+        "TGCAATGT", "TGCAATTT", "TGCACTAT", "TGCAGTAT", "TGCATTAT", "TGCCATAT", "TGCGATAT", "TGCTATAT",
+        "TGGAATAT", "TGTAATAT", "TTAAATAT", "TTCAAAAT", "TTCAACAT", "TTCAAGAT", "TTCAATAA", "TTCAATAC",
+        "TTCAATAG", "TTCAATAT", "TTCAATCT", "TTCAATGT", "TTCAATTT", "TTCACTAT", "TTCAGTAT", "TTCATTAT",
+        "TTCCATAT", "TTCGATAT", "TTCTATAT", "TTGAATAT", "TTTAATAT"
+    });
+    EXPECT_EQ(
+        NeighborsRecursive("TCCAATAT", 2),
+        test2
+    );
+
+    EXPECT_EQ(
+        NeighborsIterative("ACG", 1),
+        test1
+    );
+
+    EXPECT_EQ(
+        NeighborsIterative("TCCAATAT", 2),
+        test2
     );
 }
 

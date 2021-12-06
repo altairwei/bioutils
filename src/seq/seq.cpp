@@ -47,16 +47,18 @@ int
 main(int argc, char *argv[], char *envp[])
 {
     string file_name = "-";
-    bool do_reverse_complement = false;
-    bool do_hash = false;
 
     CLI::App app{PROGRAM_NAME};
     app.add_option("file", file_name, "file contains sequences.");
     app.require_subcommand(1);
 
+    bool do_reverse_complement = false;
+    bool do_hash = false;
+    unsigned int hamming_distance = 0;
     CLI::App* conv_subapp = app.add_subcommand("conv", "Convert the sequence");
     conv_subapp->fallthrough();
     conv_subapp->add_flag("-c,--reverse-complement", do_reverse_complement, "Get reverse complement sequence.");
+    conv_subapp->add_option("-d,--d-neighbors", hamming_distance, "Generate the d-Neighborhood of a String.");
     conv_subapp->add_flag("-H,--hash", do_hash, "Get hash number of the sequence.");
     conv_subapp->callback([&]() {
         string seq = bioutils::IO::read_input(file_name);
@@ -84,6 +86,10 @@ main(int argc, char *argv[], char *envp[])
 
             std::cout << std::endl;
 
+        } else if (hamming_distance > 0) {
+            auto neighbors = bioutils::algorithms::NeighborsRecursive(seq, hamming_distance);
+            for (auto n : neighbors)
+                std::cout << n << std::endl;
         } else {
             std::cout << output << std::endl;
         }

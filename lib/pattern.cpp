@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <limits>
 #include <array>
+#include <iostream>
 
 #include "exceptions.h"
 #include "utils.h"
@@ -241,6 +242,28 @@ std::vector<size_t> PatternIndex(const std::string_view text, const std::string_
     return output;
 }
 
+/*!
+    \brief Find All Approximate Occurrences of a Pattern in a String
+
+    We say that a k-mer \a pattern appears as a substring of \a text with at
+    most \a d mismatches if there is some k-mer substring pattern2 of \a text
+    having \a d or fewer mismatches with \a pattern, i.e., HammingDistance(pattern, pattern2) ≤ d.
+ */
+std::vector<size_t> PatternIndexApproximate(const std::string_view text, const std::string_view pattern, const size_t d)
+{
+    size_t text_len = text.length();
+    size_t pattern_len = pattern.length();
+
+    std::vector<size_t> output;
+    for (size_t i = 0; i < SubstrCount(text_len, pattern_len); i++) {
+        if (HammingDistance(text.substr(i, pattern_len), pattern) <= d) {
+            output.push_back(i);
+        }
+    }
+
+    return output;
+}
+
 /**
  * @brief Find the most frequent k-mers in a string.
  * 
@@ -411,6 +434,23 @@ std::set<std::string> FrequentWordsBySorting(const std::string_view text, const 
     return max_freq;
 }
 
+std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, const int k, const int d)
+{
+    if (!isPatternValid(text.length(), k))
+        return std::set<std::string>();
+
+    auto kmer_freq_table = FrequencyTableWithMismatches(text, k, d);
+    size_t max = MaxMap(kmer_freq_table);
+
+    std::set<std::string> max_freq;
+    for (auto p : kmer_freq_table) {
+        if (p.second == max)
+            max_freq.insert(p.first);
+    }
+
+    return max_freq;
+}
+
 /*!
     Make a table corresponding to counting the number of occurrences of every k-mer.
 
@@ -433,6 +473,27 @@ std::unordered_map<std::string, uint> FrequencyTable(const std::string_view text
         // Performing an insertion if such key does not already exist and
         // the mapped value is value-initialized (in this case, it's zero).
         output[std::string(text.substr(i, k))]++;
+    }
+
+    return output;
+}
+
+unordered_map<string, uint> FrequencyTableWithMismatches(const string_view text, const int k, const int d)
+{
+    size_t t_len = text.length();
+    size_t n_kmer = SubstrCount(t_len, k);
+
+    if (!isPatternValid(t_len, k))
+        return std::unordered_map<std::string, uint>();
+
+    std::unordered_map<std::string, uint> output;
+    for (int i = 0; i < n_kmer; i++) {
+        // Neighborhood relationships are mutual, and when this k-mer shows up,
+        // it means all the neighbors show up. Therefor, we can increase the
+        // count for all of them.
+        const auto neighbors = NeighborsRecursive(text.substr(i, k), d);
+        for (const auto &neigh : neighbors)
+            output[neigh]++;
     }
 
     return output;
@@ -772,44 +833,73 @@ size_t HammingDistance(const std::string_view pattern1, const std::string_view p
     return d;
 }
 
+const static char NUCLEOTIDES[4] = {'A', 'C', 'G', 'T'};
 /*!
-    \brief Find All Approximate Occurrences of a Pattern in a String
+    \brief Generate the d-Neighborhood of a String
 
-    We say that a k-mer \a pattern appears as a substring of \a text with at
-    most \a d mismatches if there is some k-mer substring pattern2 of \a text
-    having \a d or fewer mismatches with \a pattern, i.e., HammingDistance(pattern, pattern2) ≤ d.
+    The d-neighborhood Neighbors(Pattern, d) is the set of all k-mers whose
+    Hamming distance from Pattern does not exceed \a d.
  */
-std::vector<size_t> PatternIndexApproximate(const std::string_view text, const std::string_view pattern, const size_t d)
+std::set<std::string> NeighborsRecursive(const std::string_view pattern, int d)
 {
-    size_t text_len = text.length();
-    size_t pattern_len = pattern.length();
+    if (d == 0)
+        return {std::string(pattern)};
 
-    std::vector<size_t> output;
-    for (size_t i = 0; i < SubstrCount(text_len, pattern_len); i++) {
-        if (HammingDistance(text.substr(i, pattern_len), pattern) <= d) {
-            output.push_back(i);
+    if (pattern.length() == 1)
+        return {"A", "C", "G", "T"};
+
+    std::set<std::string> neighborhood;
+    auto suffix = pattern.substr(1, pattern.length() - 1);
+    auto suffix_neighbors = NeighborsRecursive(suffix, d);
+    for (auto text : suffix_neighbors) {
+        // Hamming distance of text and suffix is either equal to d or less
+        // than d. So we can genetate neighbors of raw text based on neighbors
+        // of suffix.
+        if (HammingDistance(suffix, text) < d) {
+            for (auto n : NUCLEOTIDES)
+                neighborhood.insert(n + text);
+        } else {
+            // Because the maximum allowed value of d has been reached, so we
+            // just add first symbol of raw text to neighbors of suffix.
+            neighborhood.insert(pattern.at(0) + text);
         }
     }
 
-    return output;
+    return neighborhood;
 }
 
-std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, const int k, const int d)
+set<string> ImmediateNeighbors(const string_view pattern)
 {
-    if (!isPatternValid(text.length(), k))
-        return std::set<std::string>();
+    set<string> neighborhood{string(pattern)};
 
-    auto kmer_freq_table = FrequencyTable(text, k);
-    // 重新定义最大值，计算所有 Hamming 距离小于 d 的组合。
-    size_t max = MaxMap(kmer_freq_table);
-
-    std::set<std::string> max_freq;
-    for (auto p : kmer_freq_table) {
-        if (p.second == max)
-            max_freq.insert(p.first);
+    for (int i = 0; i < pattern.length(); i++) {
+        const auto symbol = pattern.at(i);
+        for (const auto N : NUCLEOTIDES) {
+            if (symbol != N) {
+                string neighbor(pattern);
+                neighbor[i] = N;
+                neighborhood.insert(neighbor);
+            }
+        }
     }
 
-    return max_freq;
+    return neighborhood;
+}
+
+set<string> NeighborsIterative(const string_view pattern, int d)
+{
+    set<string> neighborhood{string(pattern)};
+
+    for (int i = 1; i <= d; i++) {
+        set<string> n_neighbors;
+        for (const auto p : neighborhood) {
+            auto nei = ImmediateNeighbors(p);
+            n_neighbors.merge(nei);
+        }
+        neighborhood.merge(n_neighbors);
+    }
+
+    return neighborhood;
 }
 
 BIOUTILS_END_SUB_NAMESPACE(algorithms)
