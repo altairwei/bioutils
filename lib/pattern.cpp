@@ -393,9 +393,10 @@ std::set<std::string> FrequentWordsByPerfectHash(const std::string_view text, co
     of identical pattern hash in sorted index.
 
     This method is not as efficient as FrequentWordsByStdHash, because FrequencyTable
-    is very efficient. The length of FrequencyTable result will be shorter than
-    index/count array of FrequentWordsBySorting and then sorting index array also
-    increases the running time.
+    is implemented with std::unordered_map and is very efficient. The length of
+    FrequencyTable result will be shorter than "index/count" array of
+    FrequentWordsBySorting and then sorting index array also increases the
+    running time.
  */
 std::set<std::string> FrequentWordsBySorting(const std::string_view text, const int k)
 {
@@ -404,7 +405,7 @@ std::set<std::string> FrequentWordsBySorting(const std::string_view text, const 
 
     size_t n_kmer = SubstrCount(text.length(), k);
 
-    // index is the pattern hash of each k-mer in text.
+    // `index` is the pattern hash of each k-mer in text.
     std::vector<hash_t> index(n_kmer, 0);
     for (size_t i = 0; i < n_kmer; i++)
         index[i] = PatternToNumberBitwise(text.substr(i, k));
@@ -412,17 +413,18 @@ std::set<std::string> FrequentWordsBySorting(const std::string_view text, const 
     // Sorted with the default operator<
     std::sort(index.begin(), index.end());
 
+    size_t max = 1;
     // Frequent k-mers are the longest runs of identical pattern hash in
     // sorted index.
     std::vector<size_t> count(n_kmer, 1);
     for (size_t i = 1; i < n_kmer; i++) {
         if (index[i] == index[i-1])
             count[i] = count[i-1] + 1;
+        if (count[i] > max)
+            max = count[i];
     }
 
-    size_t max = MaxArray(count);
     std::set<std::string> max_freq;
-
     for (int i = 0; i < n_kmer; i++) {
         if (count[i] == max) {
             max_freq.insert(
@@ -446,6 +448,51 @@ std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, c
     for (auto p : kmer_freq_table) {
         if (p.second == max)
             max_freq.insert(p.first);
+    }
+
+    return max_freq;
+}
+
+std::set<std::string> FrequentWordsWithMismatchesBySorting(const std::string_view text, const int k, const int d)
+{
+    if (!isPatternValid(text.length(), k))
+        return set<string>();
+
+    size_t n_kmer = SubstrCount(text.length(), k);
+
+    // 最大的不同在于，我们将生成的 Neighborhoods 当做所有在原始序列中出现过的 k-mer
+    vector<string> neighborhoods;
+    for (size_t i = 0; i < n_kmer; i++) {
+        auto neighbors = NeighborsRecursive(text.substr(i, k), d);
+        neighborhoods.reserve(neighbors.size());
+        for (auto it = neighbors.begin(); it != neighbors.end(); ) {
+            neighborhoods.push_back(
+                std::move(neighbors.extract(it++).value()));
+        }
+    }
+
+    vector<hash_t> index(neighborhoods.size(), 0);
+    for (size_t i = 0; i < neighborhoods.size(); i++)
+        index[i] = PatternToNumberBitwise(neighborhoods[i]);
+
+    std::sort(index.begin(), index.end());
+
+    size_t max = 1;
+    vector<size_t> count(index.size(), 1);
+    for (size_t i = 1; i < index.size(); i++) {
+        if (index[i] == index[i-1])
+            count[i] = count[i-1] + 1;
+        if (count[i] > max)
+            max = count[i];
+    }
+
+    std::set<std::string> max_freq;
+    for (int i = 0; i < count.size(); i++) {
+        if (count[i] == max) {
+            max_freq.insert(
+                NumberToPatternBitwise(index[i], k)
+            );
+        }
     }
 
     return max_freq;
@@ -868,6 +915,9 @@ std::set<std::string> NeighborsRecursive(const std::string_view pattern, int d)
     return neighborhood;
 }
 
+/*!
+    Generate the 1-neigborhood of \a pattern
+ */
 set<string> ImmediateNeighbors(const string_view pattern)
 {
     set<string> neighborhood{string(pattern)};
@@ -886,6 +936,9 @@ set<string> ImmediateNeighbors(const string_view pattern)
     return neighborhood;
 }
 
+/*!
+    Iterative version of Neighbors avoiding recursive algorithm
+ */
 set<string> NeighborsIterative(const string_view pattern, int d)
 {
     set<string> neighborhood{string(pattern)};

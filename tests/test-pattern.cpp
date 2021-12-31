@@ -268,18 +268,23 @@ INSTANTIATE_TEST_SUITE_P(
         case AlgorithmEfficiency::Fast:
             return "FrequentWordsByPerfectHash";
         case AlgorithmEfficiency::Faster:
-            return "FrequentWordsByStdHash";
-        case AlgorithmEfficiency::Fastest:
             return "FrequentWordsBySorting";
+        case AlgorithmEfficiency::Fastest:
+            return "FrequentWordsByStdHash";
         default:
             return "Unknown";
         }
     }
 );
 
-TEST(TestFrequentWordsWithMismatches, HandleNormalInput) {
+typedef std::set<std::string> (*FrequentWordsWithMismatchesFuncPtr)(std::string_view, int, int);
+class TestFrequentWordsWithMismatches : public TestWithParam<FrequentWordsWithMismatchesFuncPtr> {};
+
+TEST_P(TestFrequentWordsWithMismatches, HandleNormalInput) {
+    FrequentWordsWithMismatchesFuncPtr fun = GetParam();
+
     EXPECT_EQ(
-        FrequentWordsWithMismatches("ACGTTGCATGTCGCATGATGCATGAGAGCT", 4, 1),
+        fun("ACGTTGCATGTCGCATGATGCATGAGAGCT", 4, 1),
         std::set<std::string>({"GATG", "ATGC", "ATGT"})
     );
 
@@ -287,12 +292,12 @@ TEST(TestFrequentWordsWithMismatches, HandleNormalInput) {
         Text contains partial and complete matches for the most frequent word.
     */
     EXPECT_EQ(
-            FrequentWordsWithMismatches("AGGT", 2, 1),
-            std::set<std::string>({"GG"})
+        fun("AGGT", 2, 1),
+        std::set<std::string>({"GG"})
     );
 
     EXPECT_EQ(
-        FrequentWordsWithMismatches("AGGGT", 2, 0),
+        fun("AGGGT", 2, 0),
         std::set<std::string>({"GG"})
     );
 
@@ -300,10 +305,26 @@ TEST(TestFrequentWordsWithMismatches, HandleNormalInput) {
         Text has multiple most frequent words
     */
     EXPECT_EQ(
-        FrequentWordsWithMismatches("AGGCGG", 3, 0),
+        fun("AGGCGG", 3, 0),
         std::set<std::string>({"AGG", "GGC", "GCG", "CGG"})
     );
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    TestAllFrequentWordsWithMismatches, TestFrequentWordsWithMismatches,
+    Values(
+        FrequentWordsWithMismatches,
+        FrequentWordsWithMismatchesBySorting),
+    [](const ::testing::TestParamInfo<TestFrequentWordsWithMismatches::ParamType>& info) {
+        if (info.param == &FrequentWordsWithMismatches) {
+            return "FrequentWordsWithMismatches";
+        } else if (info.param == &FrequentWordsWithMismatchesBySorting) {
+            return "FrequentWordsWithMismatchesBySorting";
+        } else {
+            return "Unknown";
+        }
+    }
+);
 
 TEST(TestPatternIndex, HandleNormalInput) {
     EXPECT_EQ(

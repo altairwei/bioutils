@@ -43,6 +43,7 @@ std::unordered_map<std::string, uint> FrequencyTable(const std::string_view text
 std::unordered_map<std::string, uint> FrequencyTableWithMismatches(const std::string_view text, const int k, const int d);
 std::vector<uint> FrequencyArray(const std::string_view text, const int k);
 std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, const int k, const int d);
+std::set<std::string> FrequentWordsWithMismatchesBySorting(const std::string_view text, const int k, const int d);
 
 std::set<std::string> FindClumps(const std::string_view genome, int k, int window_length, int times, AlgorithmEfficiency algo = AlgorithmEfficiency::Default);
 std::vector<size_t> FindMinimumSkew(const std::string_view genome);
