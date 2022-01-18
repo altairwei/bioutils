@@ -2,7 +2,9 @@
 .data/
 .tmp/
 
-build
+build/
+html/
+latex/
 
 *.exe
 *.obj

@@ -114,7 +114,7 @@ void find_do(const std::string_view text, const std::string_view pattern,
 
     This version of PatternCount is kind of brute force algorithm.
  */
-static size_t PatternCount_BF(const std::string_view text, const std::string_view pattern)
+size_t PatternCount_BF(const std::string_view text, const std::string_view pattern)
 {
     unsigned int count = 0;
 
@@ -172,7 +172,7 @@ static size_t PatternCount_BFH(const std::string_view text, const std::string_vi
     implemented with Rabin-Karp algorithm. The max length of \a pattern is 32,
     which can be hashed in to `long long` type.
  */
-static size_t PatternCount_RK(const std::string_view text, const std::string_view pattern)
+size_t PatternCount_RK(const std::string_view text, const std::string_view pattern)
 {
     size_t t_len = text.length();
     size_t p_len = pattern.length();
@@ -436,6 +436,11 @@ std::set<std::string> FrequentWordsBySorting(const std::string_view text, const 
     return max_freq;
 }
 
+/*!
+    \brief Find the Most Frequent Words with Mismatches in a String
+
+    See https://rosalind.info/problems/ba1i/
+ */
 std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, const int k, const int d)
 {
     if (!isPatternValid(text.length(), k))
@@ -453,6 +458,11 @@ std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, c
     return max_freq;
 }
 
+/*!
+    \brief Find the Most Frequent Words with Mismatches in a String
+
+    See https://rosalind.info/problems/ba1i/
+ */
 std::set<std::string> FrequentWordsWithMismatchesBySorting(const std::string_view text, const int k, const int d)
 {
     if (!isPatternValid(text.length(), k))

@@ -29,7 +29,9 @@ bool is_ntp(char c);
 
 void find_do(const std::string_view text, const std::string_view pattern,
     std::function<void(const size_t, const std::string_view, const std::string_view)> callback);
-std::size_t PatternCount(const std::string_view text, const std::string_view pattern, AlgorithmEfficiency algo);
+size_t PatternCount(const std::string_view text, const std::string_view pattern, AlgorithmEfficiency algo);
+size_t PatternCount_RK(const std::string_view text, const std::string_view pattern);
+size_t PatternCount_BF(const std::string_view text, const std::string_view pattern);
 std::vector<size_t> PatternIndex(const std::string_view text, const std::string_view pattern);
 std::vector<size_t> PatternIndexApproximate(const std::string_view text, const std::string_view pattern, const size_t d);
 
@@ -46,6 +48,8 @@ std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, c
 std::set<std::string> FrequentWordsWithMismatchesBySorting(const std::string_view text, const int k, const int d);
 
 std::set<std::string> FindClumps(const std::string_view genome, int k, int window_length, int times, AlgorithmEfficiency algo = AlgorithmEfficiency::Default);
+std::set<std::string> FindClumpsBetterWithStdHash(const std::string_view genome, int k, int window_length, int times);
+std::set<std::string> FindClumpsBetterWithPerfectHash(const std::string_view genome, int k, int window_length, int times);
 std::vector<size_t> FindMinimumSkew(const std::string_view genome);
 
 size_t HammingDistance(const std::string_view pattern1, const std::string_view pattern2);

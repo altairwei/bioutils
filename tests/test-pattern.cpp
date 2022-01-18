@@ -316,9 +316,9 @@ INSTANTIATE_TEST_SUITE_P(
         FrequentWordsWithMismatches,
         FrequentWordsWithMismatchesBySorting),
     [](const ::testing::TestParamInfo<TestFrequentWordsWithMismatches::ParamType>& info) {
-        if (info.param == &FrequentWordsWithMismatches) {
+        if (info.param == FrequentWordsWithMismatches) {
             return "FrequentWordsWithMismatches";
-        } else if (info.param == &FrequentWordsWithMismatchesBySorting) {
+        } else if (info.param == FrequentWordsWithMismatchesBySorting) {
             return "FrequentWordsWithMismatchesBySorting";
         } else {
             return "Unknown";
