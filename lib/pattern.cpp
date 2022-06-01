@@ -6,6 +6,7 @@
 #include <limits>
 #include <array>
 #include <iostream>
+#include <cassert>
 
 #include "exceptions.h"
 #include "utils.h"
@@ -441,12 +442,12 @@ std::set<std::string> FrequentWordsBySorting(const std::string_view text, const 
 
     See https://rosalind.info/problems/ba1i/
  */
-std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, const int k, const int d)
+std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, const int k, const int d, bool rev_comp)
 {
     if (!isPatternValid(text.length(), k))
         return std::set<std::string>();
 
-    auto kmer_freq_table = FrequencyTableWithMismatches(text, k, d);
+    auto kmer_freq_table = FrequencyTableWithMismatches(text, k, d, rev_comp);
     size_t max = MaxMap(kmer_freq_table);
 
     std::set<std::string> max_freq;
@@ -463,7 +464,8 @@ std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, c
 
     See https://rosalind.info/problems/ba1i/
  */
-std::set<std::string> FrequentWordsWithMismatchesBySorting(const std::string_view text, const int k, const int d)
+std::set<std::string> FrequentWordsWithMismatchesBySorting(
+    const std::string_view text, const int k, const int d, bool rev_comp)
 {
     if (!isPatternValid(text.length(), k))
         return set<string>();
@@ -473,12 +475,23 @@ std::set<std::string> FrequentWordsWithMismatchesBySorting(const std::string_vie
     // 最大的不同在于，我们将生成的 Neighborhoods 当做所有在原始序列中出现过的 k-mer
     vector<string> neighborhoods;
     for (size_t i = 0; i < n_kmer; i++) {
-        auto neighbors = NeighborsRecursive(text.substr(i, k), d);
+        auto kmer = text.substr(i, k);
+        auto neighbors = NeighborsRecursive(kmer, d);
         neighborhoods.reserve(neighbors.size());
         for (auto it = neighbors.begin(); it != neighbors.end(); ) {
             neighborhoods.push_back(
                 std::move(neighbors.extract(it++).value()));
         }
+
+        if (rev_comp) {
+            auto rev_neighbors = NeighborsRecursive(ReverseComplement(kmer), d);
+            neighborhoods.reserve(neighborhoods.size() + rev_neighbors.size());
+            for (auto it = rev_neighbors.begin(); it != rev_neighbors.end(); ) {
+                neighborhoods.push_back(
+                    std::move(rev_neighbors.extract(it++).value()));
+            }
+        }
+
     }
 
     vector<hash_t> index(neighborhoods.size(), 0);
@@ -535,7 +548,8 @@ std::unordered_map<std::string, uint> FrequencyTable(const std::string_view text
     return output;
 }
 
-unordered_map<string, uint> FrequencyTableWithMismatches(const string_view text, const int k, const int d)
+unordered_map<string, uint> FrequencyTableWithMismatches(
+    const string_view text, const int k, const int d, bool rev_comp)
 {
     size_t t_len = text.length();
     size_t n_kmer = SubstrCount(t_len, k);
@@ -545,12 +559,22 @@ unordered_map<string, uint> FrequencyTableWithMismatches(const string_view text,
 
     std::unordered_map<std::string, uint> output;
     for (int i = 0; i < n_kmer; i++) {
-        // Neighborhood relationships are mutual, and when this k-mer shows up,
+        // Neighborhood relationships are mutual. When one k-mer shows up,
         // it means all the neighbors show up. Therefor, we can increase the
         // count for all of them.
-        const auto neighbors = NeighborsRecursive(text.substr(i, k), d);
+        auto kmer = text.substr(i, k);
+        auto neighbors = NeighborsRecursive(kmer, d);
         for (const auto &neigh : neighbors)
             output[neigh]++;
+
+        if (rev_comp) {
+            // When one k-mer shows up, it means the reverse complement of that
+            // k-mer can be found on reverse complement of \a text. If k-mer
+            // equals to its reverse complement, counts are doubled.
+            auto rev_neighbors = NeighborsRecursive(ReverseComplement(kmer), d);
+            for (const auto &rev : rev_neighbors)
+                output[rev]++;
+        }
     }
 
     return output;
@@ -963,6 +987,33 @@ set<string> NeighborsIterative(const string_view pattern, int d)
     }
 
     return neighborhood;
+}
+
+static const map<char, char> base_comp = {
+    {'A', 'T'}, {'T', 'A'},
+    {'C', 'G'}, {'G', 'C'}
+};
+
+string
+ReverseComplement(const string_view oriSeq) noexcept(false)
+{
+    size_t len = oriSeq.length();
+    string revSeq;
+    revSeq.reserve(len);
+
+    // Get complementary
+    for (const char &nucleotide : oriSeq) {
+        try {
+            revSeq.push_back(base_comp.at(nucleotide));
+        } catch(std::out_of_range &) {
+            throw UnknownNucleotideError(nucleotide);
+        }
+    }
+
+    // Get reversed
+    std::reverse(revSeq.begin(), revSeq.end());
+
+    return revSeq;
 }
 
 BIOUTILS_END_SUB_NAMESPACE(algorithms)

@@ -277,14 +277,14 @@ INSTANTIATE_TEST_SUITE_P(
     }
 );
 
-typedef std::set<std::string> (*FrequentWordsWithMismatchesFuncPtr)(std::string_view, int, int);
+typedef std::set<std::string> (*FrequentWordsWithMismatchesFuncPtr)(std::string_view, int, int, bool rev);
 class TestFrequentWordsWithMismatches : public TestWithParam<FrequentWordsWithMismatchesFuncPtr> {};
 
 TEST_P(TestFrequentWordsWithMismatches, HandleNormalInput) {
     FrequentWordsWithMismatchesFuncPtr fun = GetParam();
 
     EXPECT_EQ(
-        fun("ACGTTGCATGTCGCATGATGCATGAGAGCT", 4, 1),
+        fun("ACGTTGCATGTCGCATGATGCATGAGAGCT", 4, 1, false),
         std::set<std::string>({"GATG", "ATGC", "ATGT"})
     );
 
@@ -292,12 +292,12 @@ TEST_P(TestFrequentWordsWithMismatches, HandleNormalInput) {
         Text contains partial and complete matches for the most frequent word.
     */
     EXPECT_EQ(
-        fun("AGGT", 2, 1),
+        fun("AGGT", 2, 1, false),
         std::set<std::string>({"GG"})
     );
 
     EXPECT_EQ(
-        fun("AGGGT", 2, 0),
+        fun("AGGGT", 2, 0, false),
         std::set<std::string>({"GG"})
     );
 
@@ -305,8 +305,76 @@ TEST_P(TestFrequentWordsWithMismatches, HandleNormalInput) {
         Text has multiple most frequent words
     */
     EXPECT_EQ(
-        fun("AGGCGG", 3, 0),
+        fun("AGGCGG", 3, 0, false),
         std::set<std::string>({"AGG", "GGC", "GCG", "CGG"})
+    );
+}
+
+TEST_P(TestFrequentWordsWithMismatches, ReverseComplements) {
+    FrequentWordsWithMismatchesFuncPtr fun = GetParam();
+
+    EXPECT_EQ(
+        fun("ACGTTGCATGTCGCATGATGCATGAGAGCT", 4, 1, true),
+        std::set<std::string>({"ATGT", "ACAT"})
+    );
+
+    /*
+        Text contains partial and completes matches for the most frequent word.
+    */
+    EXPECT_EQ(
+        fun("AAAAAAAAAA", 2, 1, true),
+        std::set<std::string>({"AT", "TA"})
+    );
+
+    /*
+        This dataset makes sure that your code is not accidentally swapping k and d
+    */
+    EXPECT_EQ(
+        fun("AGTCAGTC", 4, 2, true),
+        std::set<std::string>({"AATT", "GGCC"})
+    );
+
+    /*
+        This dataset makes sure you are finding k-mers in both Text and
+        the reverse complement of Text.
+    */
+    EXPECT_EQ(
+        fun("AATTAATTGGTAGGTAGGTA", 4, 0, true),
+        std::set<std::string>({"AATT"})
+    );
+
+    /*
+        This dataset first checks that k-mers with exactly d mismatches are being found. Then,
+        it checks that k-mers with less than d mismatches are being allowed (i.e. you are not only allowing
+        k-mers with exactly d mismatches). Next, it checks that you are not returning too few k-mers. Last,
+        it checks that you are not returning too many k-mers.
+    */
+    EXPECT_EQ(
+        fun("ATA", 3, 1, true),
+        std::set<std::string>({
+            "AAA", "AAT", "ACA", "AGA", "ATA",
+            "ATC", "ATG", "ATT", "CAT", "CTA",
+            "GAT", "GTA", "TAA", "TAC", "TAG",
+            "TAT", "TCT", "TGT", "TTA", "TTT"})
+    );
+
+    /*
+        This dataset checks that your code is looking at both Text and its reverse complement
+        (i.e. not just looking at Text, and not just looking at the reverse complement of Text, but looking at
+        both).
+    */
+    EXPECT_EQ(
+        fun("AAT", 3, 0, true),
+        std::set<std::string>({"AAT", "ATT"})
+    );
+
+    /*
+        This dataset checks that your code correctly delimiting your output (i.e. using spaces)
+        and verifies that your k-mers are actually of length k.
+    */
+    EXPECT_EQ(
+        fun("TAGCG", 2, 1, true),
+        std::set<std::string>({"CA", "CC", "GG", "TG"})
     );
 }
 

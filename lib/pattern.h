@@ -26,6 +26,7 @@ hash_t PatternToNumberBitwise(const std::string_view pattern);
 hash_t PatternToNumberRecursive(const std::string_view pattern);
 std::string NumberToPatternBitwise(const hash_t number, const int length);
 bool is_ntp(char c);
+std::string ReverseComplement(const std::string_view oriSeq);
 
 void find_do(const std::string_view text, const std::string_view pattern,
     std::function<void(const size_t, const std::string_view, const std::string_view)> callback);
@@ -40,12 +41,14 @@ std::set<std::string> FrequentWordsSlow(const std::string_view text, const int k
 std::set<std::string> FrequentWordsByPerfectHash(const std::string_view text, const int k);
 std::set<std::string> FrequentWordsByStdHash(const std::string_view text, const int k);
 std::set<std::string> FrequentWordsBySorting(const std::string_view text, const int k);
-std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, const int k, const int d);
 std::unordered_map<std::string, uint> FrequencyTable(const std::string_view text, const int k);
-std::unordered_map<std::string, uint> FrequencyTableWithMismatches(const std::string_view text, const int k, const int d);
+std::unordered_map<std::string, uint> FrequencyTableWithMismatches(
+    const std::string_view text, const int k, const int d, bool rev_comp = false);
 std::vector<uint> FrequencyArray(const std::string_view text, const int k);
-std::set<std::string> FrequentWordsWithMismatches(const std::string_view text, const int k, const int d);
-std::set<std::string> FrequentWordsWithMismatchesBySorting(const std::string_view text, const int k, const int d);
+std::set<std::string> FrequentWordsWithMismatches(
+    const std::string_view text, const int k, const int d, bool rev_comp = false);
+std::set<std::string> FrequentWordsWithMismatchesBySorting(
+    const std::string_view text, const int k, const int d, bool rev_comp = false);
 
 std::set<std::string> FindClumps(const std::string_view genome, int k, int window_length, int times, AlgorithmEfficiency algo = AlgorithmEfficiency::Default);
 std::set<std::string> FindClumpsBetterWithStdHash(const std::string_view genome, int k, int window_length, int times);

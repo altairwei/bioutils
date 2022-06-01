@@ -101,24 +101,26 @@ main( int argc, char *argv[], char *envp[] )
     });
 
 
+    bool rv = false;
     CLI::App* freq_subapp = app.add_subcommand("freq", "Find Most Frequent k-mer");
     freq_subapp->fallthrough();
     freq_subapp->add_option("-k,--kmer", kmer, "Length of k-mer to find.")->required();
-    freq_subapp->add_option("-d,--hamming-distance", hamming_distance,
+    auto op = freq_subapp->add_option("-d,--hamming-distance", hamming_distance,
         "Find the Most Frequent Words with Mismatches (less than or equal to d) in a String.");
+    freq_subapp->add_flag("-r,--reverse-complement", rv,
+        "Frequent Words with Mismatches and Reverse Complements")
+        ->needs(op);
+
     freq_subapp->callback([&]() {
-        string text;
-        if (file_name == "-") {
-            text = IO::read_stdin();
-        } else {
-            text = IO::read_file(file_name);
-        }
+        string seq = IO::read_input(file_name);
+        seq.erase(std::remove(seq.begin(), seq.end(), '\n'), seq.end());
+        seq.erase(std::remove(seq.begin(), seq.end(), '\r'), seq.end());
 
         set<string> results;
         if (hamming_distance > 0)
-            results = algorithms::FrequentWordsWithMismatches(text, kmer, hamming_distance);
+            results = algorithms::FrequentWordsWithMismatches(seq, kmer, hamming_distance, rv);
         else
-            results = algorithms::FrequentWords(text, kmer);
+            results = algorithms::FrequentWords(seq, kmer);
 
         for (auto kmer : results) {
             cout << kmer << endl;

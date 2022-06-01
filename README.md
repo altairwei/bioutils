@@ -16,7 +16,7 @@ These [questions](http://rosalind.info/problems/list-view/?location=bioinformati
 - [x] BA1G	Compute the Hamming Distance Between Two Strings
 - [x] BA1H	Find All Approximate Occurrences of a Pattern in a String
 - [x] BA1I	Find the Most Frequent Words with Mismatches in a String
-- [ ] BA1J	Find Frequent Words with Mismatches and Reverse Complements
+- [x] BA1J	Find Frequent Words with Mismatches and Reverse Complements
 - [x] BA1K	Generate the Frequency Array of a String
 - [x] BA1L	Implement PatternToNumber
 - [x] BA1M	Implement NumberToPattern

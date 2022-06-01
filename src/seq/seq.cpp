@@ -11,37 +11,9 @@
 
 using namespace std;
 using namespace bioutils::utils;
+using namespace bioutils;
 
 #define PROGRAM_NAME "bioseq - A tool to manipulate sequences."
-
-static const map<char, char> base_comp = {
-    {'A', 'T'}, {'T', 'A'},
-    {'C', 'G'}, {'G', 'C'}
-};
-
-
-string
-ReverseComplement(const string &oriSeq) noexcept(false)
-{
-    size_t len = oriSeq.length();
-    string revSeq;
-    revSeq.reserve(len);
-
-    // Get complementary
-    for (const char &nucleotide : oriSeq) {
-        try {
-            revSeq.push_back(base_comp.at(nucleotide));
-        } catch(std::out_of_range &) {
-            throw UnknownNucleotideError(nucleotide);
-        }
-    }
-
-    // Get reversed
-    std::reverse(revSeq.begin(), revSeq.end());
-
-    return revSeq;
-}
-
 
 int
 main(int argc, char *argv[], char *envp[])
@@ -69,7 +41,7 @@ main(int argc, char *argv[], char *envp[])
         string output = seq;
 
         if (do_reverse_complement)
-            output = ReverseComplement(seq);
+            output = algorithms::ReverseComplement(seq);
 
         if (do_hash && !output.empty()) {
             auto hash = bioutils::algorithms::PatternToNumber(output);
